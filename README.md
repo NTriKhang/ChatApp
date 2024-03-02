@@ -7,9 +7,9 @@ Cho Backend
 ====================================================================================
 
   cho FE:
-  phần FE chỉ nằm trong ở thư mục `chat-app-client`: 
+  phần FE nằm trong ở thư mục `chat-app-client`: 
   nếu đang đứng ở thư mục `ChatApp` chạy:
-  `cd src/main/resources/static/chat-app-client`
+  `cd chat-app-client`
 
   nếu dùng npm:
   - `npm i`
