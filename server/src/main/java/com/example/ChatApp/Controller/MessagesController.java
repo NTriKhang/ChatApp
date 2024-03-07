@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.objenesis.instantiator.basic.NewInstanceInstantiator;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,12 +45,9 @@ public class MessagesController {
 			List<Messages> messages = messageService.getAll();
 			return new ResponseEntity<List<Messages>>(messages, HttpStatus.OK);
 	}
-	
-	@PostMapping("/MessageByGroupId")
-	public ResponseEntity<List<Messages>> getMessages(@RequestBody String group_id) throws JsonMappingException, JsonProcessingException {
-		ObjectMapper mapper = new ObjectMapper();
-		 GroupIdRequest  groupInfo = mapper.readValue(group_id, GroupIdRequest.class);
-		 List<Messages> messages = messageService.getMessagesByGroupId(groupInfo.groupId);
+	@GetMapping("/{group_id}")
+	public ResponseEntity<List<Messages>> getMessages(@PathVariable("group_id") String group_id) throws JsonMappingException, JsonProcessingException {
+		 List<Messages> messages = messageService.getMessagesByGroupId(group_id);
 		return new ResponseEntity<List<Messages>>(messages, HttpStatus.OK);
 	}
 }
