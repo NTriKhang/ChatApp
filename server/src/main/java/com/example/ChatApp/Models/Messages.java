@@ -1,6 +1,5 @@
 package com.example.ChatApp.Models;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
