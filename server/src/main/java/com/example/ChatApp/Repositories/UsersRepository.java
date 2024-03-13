@@ -11,4 +11,5 @@ import com.example.ChatApp.Models.Users;
 @Repository
 public interface UsersRepository extends MongoRepository<Users, ObjectId>{
     Optional<Users> findById(ObjectId id);
+    Optional<Users> findByEmail(String email);
 }
