@@ -1,8 +1,8 @@
 package com.example.ChatApp.Services;
 
 import com.example.ChatApp.Models.Users;
-import com.example.ChatApp.dto.SigUpRequest;
+import com.example.ChatApp.dto.SignUpDto;
 
 public interface AuthenticationService {
-    Users sigup(SigUpRequest sigUpRequest);
+    Users signup(SignUpDto sigUpRequest);
 }
