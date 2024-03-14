@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @SpringBootApplication
 @EnableMongoRepositories
 public class ChatAppApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(ChatAppApplication.class, args);
 	}
