@@ -37,10 +37,17 @@ public class UserService
 	 * }
 	 */
     public Users signup(SignUpDto signUpRequest){
-    	if(!usersRepository.findTag(signUpRequest.Tag).isEmpty()) {
-    		return null;
-    	}
+    	
         Users users=new Users();
+    	if(!usersRepository.findTag(signUpRequest.Tag).isEmpty()) {
+    		users.Tag = "not unique";
+    		return users;
+    	}
+    	if(!usersRepository.findByEmail(signUpRequest.Email).isEmpty()) {
+    		users.Email = "not unique";
+    		return users;
+    	}
+
         users.Email = signUpRequest.Email;
         users.Display_name = signUpRequest.Display_Name;
         users.Password = signUpRequest.Password;

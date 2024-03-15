@@ -35,8 +35,11 @@ public class AuthenticationController {
     public ResponseEntity<String> signup(@RequestBody SignUpDto sigUpRequest)
     {
         Users users = userService.signup(sigUpRequest);
-        if(users == null) {
+        if(users.Tag == "not unique") {
         	return new ResponseEntity<String>("Tag is already exist", HttpStatus.CONFLICT);
+        }
+        else if(users.Email == "not unique") {
+        	return new ResponseEntity<String>("Email is already exist", HttpStatus.CONFLICT);
         }
         return new ResponseEntity<String>("Sign up succesfully",HttpStatus.OK);
     }
