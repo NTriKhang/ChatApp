@@ -28,7 +28,6 @@ public class Users{
     public List<MessageGroup_User> List_message_group;
     public Date Created_day;
     public Date Edited_day;
-    public Object setEmail;
 
 	/*
 	 * @Override public Collection<? extends GrantedAuthority> getAuthorities() {
