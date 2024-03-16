@@ -27,38 +27,36 @@ import org.springframework.web.client.HttpClientErrorException.NotFound;
 @RequestMapping("/api/v1/auth")
 public class AuthenticationController {
 	@Autowired
-    private UserService userService;
+	private UserService userService;
 	@Autowired
 	private JWTService jwtService;
-	
-    @PostMapping("/signup")
-    public ResponseEntity<SignUpDto> signup(@RequestBody SignUpDto sigUpRequest)
-    {
-        Users users = userService.signup(sigUpRequest);
-		/*
-		 * if(users.Tag == "not unique") { return new
-		 * ResponseEntity<String>("Tag is already exist", HttpStatus.CONFLICT); } else
-		 * if(users.Email == "not unique") { return new
-		 * ResponseEntity<String>("Email is already exist", HttpStatus.CONFLICT); }
-		 * return new ResponseEntity<String>("Sign up succesfully",HttpStatus.OK);
-		 */
-        return new ResponseEntity<SignUpDto>(sigUpRequest, HttpStatus.OK);
-    }
-    
-    ///Nhan 2 tham so, account_name (có thể là email hoặc tag), password
-    @PostMapping("/signin")
-    public ResponseEntity<String> signin(@RequestBody SignInDto signInDto){
-    	System.out.println(signInDto.Account_name + ' ' + signInDto.Password);
-    	Optional<IdDto> userid = userService.signin(signInDto);
-    	if(userid.isEmpty())
-    		return new ResponseEntity<>("wrong information",HttpStatus.CONFLICT);
-    	HttpHeaders headers = new HttpHeaders();
-    	System.out.println(userid.get()._id);
-    	//String token = jwtService.generateToken(userid.get()._id);
-    	//System.out.println(token);
-        headers.add(HttpHeaders.SET_COOKIE, "userId=" + userid.get()._id + "; HttpOnly; Path=/");
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body("Signin successful");
-    }
+
+	@PostMapping("/signup")
+	public ResponseEntity<Users> signup(@RequestBody SignUpDto sigUpRequest) {
+		Users users = userService.signup(sigUpRequest);
+
+		if (users.Tag == "not unique") {
+			return new ResponseEntity<Users>(users, HttpStatus.CONFLICT);
+		} else if (users.Email == "not unique") {
+			return new ResponseEntity<Users>(users, HttpStatus.CONFLICT);
+		}
+		return new ResponseEntity<Users>(users, HttpStatus.OK);
+
+		// return new ResponseEntity<SignUpDto>(sigUpRequest, HttpStatus.OK);
+	}
+
+	/// Nhan 2 tham so, account_name (có thể là email hoặc tag), password
+	@PostMapping("/signin")
+	public ResponseEntity<Users> signin(@RequestBody SignInDto signInDto) {
+		System.out.println(signInDto.Account_name + ' ' + signInDto.Password);
+		Optional<Users> user = userService.signin(signInDto);
+		if (user.isEmpty())
+			return new ResponseEntity<>(user.get(), HttpStatus.CONFLICT);
+		HttpHeaders headers = new HttpHeaders();
+		System.out.println(user.get()._id);
+		// String token = jwtService.generateToken(userid.get()._id);
+		// System.out.println(token);
+		headers.add(HttpHeaders.SET_COOKIE, "userId=" + user.get()._id + "; HttpOnly; Path=/");
+		return ResponseEntity.ok().headers(headers).body(user.get());
+	}
 }
