@@ -52,8 +52,12 @@ const Container = styled.div`
   display: grid;
   align-items: center;
   grid-template-columns: 5% 95%;
-  background-color: #080420;
-  padding: 0 2rem;
+  background-color: #333; 
+  position: relative; 
+  padding-right: 4rem;
+  padding: 0.5rem; 
+  border-radius: 2rem; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
   @media screen and (min-width: 720px) and (max-width: 1080px) {
     padding: 0 1rem;
     gap: 1rem;
@@ -66,9 +70,10 @@ const Container = styled.div`
     .emoji {
       position: relative;
       svg {
-        font-size: 1.5rem;
-        color: #ffff00c8;
         cursor: pointer;
+        font-size: 2rem; 
+        margin: 0 0.5rem; 
+        color: #ffc107;
       }
       .emoji-picker-react {
         position: absolute;
@@ -103,15 +108,17 @@ const Container = styled.div`
     border-radius: 2rem;
     display: flex;
     align-items: center;
+    overflow: hidden;
     gap: 2rem;
-    background-color: #ffffff34;
+    background-color: #fff;
     input {
+      flex: 1;
       width: 90%;
-      height: 60%;
-      background-color: transparent;
-      color: white;
+      height: 2.5rem;
+      color: black;
+      padding-left:1rem;
       border: none;
-      padding-left: 1rem;
+      margin-left: 0.5rem;
       font-size: 1.2rem;
 
       &::selection {
@@ -122,9 +129,13 @@ const Container = styled.div`
       }
     }
     button {
-      padding: 0.3rem 2rem;
-      border-radius: 2rem;
+      border-radius: 50px; 
+      width: 4rem;
+      height: 3rem;
+      right: -2rem;
+      padding: 0.5rem;
       display: flex;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       justify-content: center;
       align-items: center;
       background-color: #9a86f3;
@@ -136,8 +147,15 @@ const Container = styled.div`
         }
       }
       svg {
-        font-size: 2rem;
+        font-size: 1.5rem;
         color: white;
+        cursor: pointer;
+      }
+      &:focus {
+        outline: none; 
+      }
+      &:hover {
+        background-color: #a99ee3; 
       }
     }
   }
