@@ -14,10 +14,10 @@ import com.example.ChatApp.dto.IdDto;
 public interface UsersRepository extends MongoRepository<Users, ObjectId>{
     Optional<Users> findById(ObjectId id);
     //Optional<Users> findByTag(String Tag);
-    @Query("{Email: (?0)}")
+    @Query(value = "{Email: ?0}", fields = "{_id: 1}")
     Optional<Users> findByEmail(String Email);
-    @Query(value = "{$or: [{Email: ?0}, {Tag: ?0}], Password: ?1}", fields = "{_id: 1}")
-    Optional<IdDto> authLogin(String account_name, String password);
+    @Query(value = "{$or: [{Email: ?0}, {Tag: ?0}], Password: ?1}")
+    Optional<Users> authLogin(String account_name, String password);
     @Query(value = "{Tag: ?0}", fields = "{_id: 1}")
     Optional<IdDto> findTag(String Tag);
 }
