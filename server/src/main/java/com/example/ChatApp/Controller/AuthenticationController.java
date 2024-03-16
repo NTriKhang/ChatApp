@@ -32,16 +32,17 @@ public class AuthenticationController {
 	private JWTService jwtService;
 	
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody SignUpDto sigUpRequest)
+    public ResponseEntity<SignUpDto> signup(@RequestBody SignUpDto sigUpRequest)
     {
         Users users = userService.signup(sigUpRequest);
-        if(users.Tag == "not unique") {
-        	return new ResponseEntity<String>("Tag is already exist", HttpStatus.CONFLICT);
-        }
-        else if(users.Email == "not unique") {
-        	return new ResponseEntity<String>("Email is already exist", HttpStatus.CONFLICT);
-        }
-        return new ResponseEntity<String>("Sign up succesfully",HttpStatus.OK);
+		/*
+		 * if(users.Tag == "not unique") { return new
+		 * ResponseEntity<String>("Tag is already exist", HttpStatus.CONFLICT); } else
+		 * if(users.Email == "not unique") { return new
+		 * ResponseEntity<String>("Email is already exist", HttpStatus.CONFLICT); }
+		 * return new ResponseEntity<String>("Sign up succesfully",HttpStatus.OK);
+		 */
+        return new ResponseEntity<SignUpDto>(sigUpRequest, HttpStatus.OK);
     }
     
     ///Nhan 2 tham so, account_name (có thể là email hoặc tag), password
