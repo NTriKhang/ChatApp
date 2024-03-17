@@ -7,9 +7,11 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { loginRoute } from "../utils/APIRoutes";
 
+import { setCurrentUserLocal, getCurrentUserLocal } from "../utils/LocalStorage"
+
 export default function Login() {
   const navigate = useNavigate();
-  const [values, setValues] = useState({ username: "", password: "" });
+  const [values, setValues] = useState({ Account_name: "", Password: "" });
   const toastOptions = {
     position: "bottom-right",
     autoClose: 8000,
@@ -17,9 +19,10 @@ export default function Login() {
     draggable: true,
     theme: "dark",
   };
+
   useEffect(() => {
-    if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
-      navigate("/");
+    if (getCurrentUserLocal()) {
+      setCurrentUserLocal({})
     }
   }, []);
 
@@ -28,12 +31,12 @@ export default function Login() {
   };
 
   const validateForm = () => {
-    const { username, password } = values;
-    if (username === "") {
-      toast.error("Email and Password is required.", toastOptions);
+    const { Account_name, Password } = values;
+    if (Account_name === "") {
+      toast.error("Vui lòng nhập Tên đăng nhập", toastOptions);
       return false;
-    } else if (password === "") {
-      toast.error("Email and Password is required.", toastOptions);
+    } else if (Password === "") {
+      toast.error("Vui lòng nhập mật khẩu", toastOptions);
       return false;
     }
     return true;
@@ -42,20 +45,16 @@ export default function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateForm()) {
-      const { username, password } = values;
+      const { Account_name, Password } = values;
       const { data } = await axios.post(loginRoute, {
-        username,
-        password,
+        Account_name,
+        Password,
       });
-      if (data.status === false) {
-        toast.error(data.msg, toastOptions);
+      if (data.status === 500) {
+        toast.error(data.error, toastOptions);
       }
-      if (data.status === true) {
-        localStorage.setItem(
-          process.env.REACT_APP_LOCALHOST_KEY,
-          JSON.stringify(data.user)
-        );
-
+      if (data.Display_name) {
+        setCurrentUserLocal(data)
         navigate("/");
       }
     }
@@ -67,24 +66,24 @@ export default function Login() {
         <form action="" onSubmit={(event) => handleSubmit(event)}>
           <div className="brand">
             <img src={Logo} alt="logo" />
-            <h1>App chat</h1>
+            <h1 className="text-blue-700">App chat</h1>
           </div>
           <input
             type="text"
             placeholder="Username"
-            name="username"
+            name="Account_name"
             onChange={(e) => handleChange(e)}
             min="3"
           />
           <input
             type="password"
             placeholder="Password"
-            name="password"
+            name="Password"
             onChange={(e) => handleChange(e)}
           />
           <button type="submit">Log In</button>
           <span>
-            Don't have an account ? <Link to="/register">Create One.</Link>
+            Bạn chưa có tài khoản ? <Link to="/register">tạo ngay.</Link>
           </span>
         </form>
       </FormContainer>
@@ -101,7 +100,7 @@ const FormContainer = styled.div`
   justify-content: center;
   gap: 1rem;
   align-items: center;
-  background-color: #131324;
+  background-color: #fff;
   .brand {
     display: flex;
     align-items: center;
@@ -110,17 +109,14 @@ const FormContainer = styled.div`
     img {
       height: 5rem;
     }
-    h1 {
-      color: white;
-      text-transform: uppercase;
-    }
+   
   }
 
   form {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    background-color: #00000076;
+    background-color: #f8f9fa;
     border-radius: 2rem;
     padding: 5rem;
   }
@@ -129,7 +125,6 @@ const FormContainer = styled.div`
     padding: 1rem;
     border: 0.1rem solid #4e0eff;
     border-radius: 0.4rem;
-    color: white;
     width: 100%;
     font-size: 1rem;
     &:focus {
@@ -152,7 +147,6 @@ const FormContainer = styled.div`
     }
   }
   span {
-    color: white;
     text-transform: uppercase;
     a {
       color: #4e0eff;

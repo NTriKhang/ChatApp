@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Contacts from "../components/Contacts"; 
 import styled from 'styled-components';
 import ChatContainer from "../components/ChatContainer";
 
 const ChatPage = () => {
   const [currentChat, setCurrentChat] = useState(null);
+
+console.log(123123);
 
   const changeChat = (newChat) => {
     setCurrentChat(newChat);
