@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
+import {  getCurrentUserLocal } from "../utils/LocalStorage"
 
 export default function Contacts({  changeChat }) {
+  const currentUser = getCurrentUserLocal();
   const [contacts, setContacts] = useState([]);
   const [currentUserImage, setCurrentUserImage] = useState('');
-  const [currentUserName, setCurrentUserName] = useState('');
   const [currentSelected, setCurrentSelected] = useState(null);
 
+
+
   useEffect(() => {
-    const userID = "65dfd0041e074622e7cd00b7";
     const fetchUserGroups = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/v1/message_group/${userID}`);
+        const response = await fetch(`http://localhost:8080/api/v1/message_group/${currentUser._id}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -76,11 +78,7 @@ export default function Contacts({  changeChat }) {
               }
             </div>
             <div className="username"> 
-            {
-              currentUserName?
-              <h2>{currentUserName}</h2>:
-              <h2>Tên không xác định</h2>
-            }
+            <h2 className="text-white">{currentUser.Display_name}</h2>
             </div>
           </div>
         </Container>

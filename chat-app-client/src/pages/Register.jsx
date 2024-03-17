@@ -6,6 +6,7 @@ import Logo from "../assets/logo.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { registerRoute } from "../utils/APIRoutes";
+import { setCurrentUserLocal, getCurrentUserLocal } from "../utils/LocalStorage"
 
 export default function Register() {
   const navigate = useNavigate();
@@ -17,15 +18,17 @@ export default function Register() {
     theme: "dark",
   };
   const [values, setValues] = useState({
-    username: "",
-    email: "",
-    password: "",
+    Display_Name: "",
+    Email: "",
+    Tag: "",
+    Birth: "",
+    Password: "",
     confirmPassword: "",
   });
 
   useEffect(() => {
-    if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
-      navigate("/");
+    if (getCurrentUserLocal()) {
+      setCurrentUserLocal({})
     }
   }, []);
 
@@ -34,27 +37,27 @@ export default function Register() {
   };
 
   const handleValidation = () => {
-    const { password, confirmPassword, username, email } = values;
-    if (password !== confirmPassword) {
+    const { Password, confirmPassword, Display_Name, Email, Birth, Tag } = values;
+    if (Password !== confirmPassword) {
       toast.error(
-        "Password and confirm password should be same.",
+        "Mật khẩu và nhắc lại mật khẩu không giống nhau",
         toastOptions
       );
       return false;
-    } else if (username.length < 3) {
+    } else if (Display_Name.length < 3) {
       toast.error(
-        "Username should be greater than 3 characters.",
+        "Tên người dùng phải lớn hơn 3 ký tự.",
         toastOptions
       );
       return false;
-    } else if (password.length < 8) {
+    } else if (Password.length < 8) {
       toast.error(
-        "Password should be equal or greater than 8 characters.",
+        "Mật khẩu phải bằng hoặc lớn hơn 8 ký tự.",
         toastOptions
       );
       return false;
-    } else if (email === "") {
-      toast.error("Email is required.", toastOptions);
+    } else if (Email === "") {
+      toast.error("Email Bắt buộc", toastOptions);
       return false;
     }
 
@@ -64,22 +67,21 @@ export default function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (handleValidation()) {
-      const { email, username, password } = values;
-      const { data } = await axios.post(registerRoute, {
-        username,
-        email,
-        password,
+      const { Email, Display_Name, Password, Birth, Tag } = values;
+      const { data, status, statusText } = await axios.post(registerRoute, {
+        Display_Name,
+        Email,
+        Password,
+        Birth,
+        Tag
       });
-
-      if (data.status === false) {
-        toast.error(data.msg, toastOptions);
-      }
-      if (data.status === true) {
-        localStorage.setItem(
-          process.env.REACT_APP_LOCALHOST_KEY,
-          JSON.stringify(data.user)
-        );
+      
+      if (status === 200) {
+        setCurrentUserLocal(data);
         navigate("/");
+       
+      } else {
+        toast.error(statusText, toastOptions);
       }
     }
   };
@@ -95,19 +97,31 @@ export default function Register() {
           <input
             type="text"
             placeholder="Username"
-            name="username"
+            name="Display_Name"
             onChange={(e) => handleChange(e)}
           />
           <input
             type="email"
             placeholder="Email"
-            name="email"
+            name="Email"
+            onChange={(e) => handleChange(e)}
+          />
+          <input
+            type="text"
+            placeholder="tag"
+            name="Tag"
+            onChange={(e) => handleChange(e)}
+          />
+          <input
+            type="date"
+            placeholder="Birth"
+            name="Birth"
             onChange={(e) => handleChange(e)}
           />
           <input
             type="password"
             placeholder="Password"
-            name="password"
+            name="Password"
             onChange={(e) => handleChange(e)}
           />
           <input
@@ -118,7 +132,7 @@ export default function Register() {
           />
           <button type="submit">Create User</button>
           <span>
-            Already have an account ? <Link to="/login">Login.</Link>
+            bạn đã có tài khoản ? <Link to="/login">Login.</Link>
           </span>
         </form>
       </FormContainer>
@@ -135,7 +149,7 @@ const FormContainer = styled.div`
   justify-content: center;
   gap: 1rem;
   align-items: center;
-  background-color: #131324;
+  background-color: #fff;
   .brand {
     display: flex;
     align-items: center;
@@ -145,7 +159,6 @@ const FormContainer = styled.div`
       height: 5rem;
     }
     h1 {
-      color: white;
       text-transform: uppercase;
     }
   }
@@ -154,7 +167,7 @@ const FormContainer = styled.div`
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    background-color: #00000076;
+    background-color: #f8f9fa;
     border-radius: 2rem;
     padding: 3rem 5rem;
   }
@@ -163,7 +176,6 @@ const FormContainer = styled.div`
     padding: 1rem;
     border: 0.1rem solid #4e0eff;
     border-radius: 0.4rem;
-    color: white;
     width: 100%;
     font-size: 1rem;
     &:focus {
@@ -186,7 +198,6 @@ const FormContainer = styled.div`
     }
   }
   span {
-    color: white;
     text-transform: uppercase;
     a {
       color: #4e0eff;

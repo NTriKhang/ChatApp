@@ -4,15 +4,17 @@ import Logout from "./Logout";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import ChatInput from "./ChatInput";
+import {  getCurrentUserLocal } from "../utils/LocalStorage"
 
 export default function ChatContainer() {
+  const currentUser = getCurrentUserLocal();
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
 
   // Cập nhật hàm để sử dụng ID người dùng cố định
   const fetchMessages = async () => {
     const userId = "65dfd1f51e074622e7cd00c1"; // Sử dụng ID cố định
-    const response = await axios.get(`http://localhost:8080/api/v1/messages/${userId}`);
+    const response = await axios.get(`http://localhost:8080/api/v1/messages/${currentUser._id}`);
     setMessages(response.data);
   };
 
@@ -32,7 +34,7 @@ export default function ChatContainer() {
             <img src="https://cdn.sforum.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg" alt="" />
           </div>
           <div className="username">
-            <h3>Test User</h3> {/* Thay thế bằng username thực tế nếu có */}
+            <h3>{currentUser.Display_name}</h3> {/* Thay thế bằng username thực tế nếu có */}
           </div>
         </div>
         <Logout />
