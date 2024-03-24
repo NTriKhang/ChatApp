@@ -9,6 +9,10 @@ import com.example.ChatApp.dto.SignInDto;
 import com.example.ChatApp.dto.SignUpDto;
 /*import lombok.RequiredArgsConstructor;*/
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import com.example.ChatApp.dto.UserUpdateDto;
@@ -18,11 +22,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException.NotFound;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -32,6 +34,7 @@ public class AuthenticationController {
 	@Autowired
 	private JWTService jwtService;
 
+	public static String upLoadDirectory=System.getProperty("user.dir")+"/src/main/resources/UserImage";
 	@PostMapping("/signup")
 	public ResponseEntity<Users> signup(@RequestBody SignUpDto sigUpRequest) {
 		Users users = userService.signup(sigUpRequest);
@@ -61,8 +64,12 @@ public class AuthenticationController {
 		return ResponseEntity.ok().headers(headers).body(user.get());
 	}
 	@PostMapping("/update")
-	public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateRequest) {
-
+	public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateRequest, @RequestParam("image")MultipartFile file) throws IOException {
+		String originalFilename= file.getOriginalFilename();
+		Path fileNameAndPath= Paths.get(upLoadDirectory,originalFilename);
+		Files.write(fileNameAndPath,file.getBytes());
+		userUpdateRequest.getImagePath(originalFilename);
+		userUpdateRequest.getBackgroundImagePath(originalFilename);
 		try {
 			Users user = userService.updateUser(userUpdateRequest);
 			return new ResponseEntity<>(user, HttpStatus.OK);

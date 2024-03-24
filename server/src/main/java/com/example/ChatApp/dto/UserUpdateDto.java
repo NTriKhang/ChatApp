@@ -56,7 +56,7 @@ public class UserUpdateDto {
         Tag = tag;
     }
 
-    public String getImagePath() {
+    public String getImagePath(String originalFilename) {
         return ImagePath;
     }
 
@@ -72,7 +72,7 @@ public class UserUpdateDto {
         Edited_day = edited_day;
     }
 
-    public String getBackgroundImagePath() {
+    public String getBackgroundImagePath(String originalFilename) {
         return BackgroundImagePath;
     }
 
