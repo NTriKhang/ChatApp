@@ -53,7 +53,7 @@ export default function Login() {
       if (data.status === 500) {
         toast.error(data.error, toastOptions);
       }
-      if (data.Display_name) {
+      if (data?.Display_name) {
         setCurrentUserLocal(data)
         navigate("/");
       }

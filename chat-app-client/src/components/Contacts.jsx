@@ -78,7 +78,7 @@ export default function Contacts({  changeChat }) {
               }
             </div>
             <div className="username"> 
-            <h2 className="text-white">{currentUser.Display_name}</h2>
+            <h2 className="text-white">{currentUser?.Display_name}</h2>
             </div>
           </div>
         </Container>
