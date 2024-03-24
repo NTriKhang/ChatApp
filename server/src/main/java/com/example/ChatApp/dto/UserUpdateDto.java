@@ -9,6 +9,23 @@ public class UserUpdateDto {
     public String DisplayName;
     public  String Email;
     public String Tag;
+
+    public Date getBirth() {
+        return Birth;
+    }
+
+    public void setBirth(Date birth) {
+        Birth = birth;
+    }
+
+    public String getImagePath() {
+        return ImagePath;
+    }
+
+    public String getBackgroundImagePath() {
+        return BackgroundImagePath;
+    }
+
     public Date Birth;
     public String ImagePath;
     public Date Edited_day;

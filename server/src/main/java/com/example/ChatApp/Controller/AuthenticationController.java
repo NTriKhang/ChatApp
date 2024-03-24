@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import com.example.ChatApp.dto.UserUpdateDto;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -64,17 +65,22 @@ public class AuthenticationController {
 		return ResponseEntity.ok().headers(headers).body(user.get());
 	}
 	@PostMapping("/update")
-	public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateRequest, @RequestParam("image")MultipartFile file) throws IOException {
-		String originalFilename= file.getOriginalFilename();
-		Path fileNameAndPath= Paths.get(upLoadDirectory,originalFilename);
-		Files.write(fileNameAndPath,file.getBytes());
-		userUpdateRequest.getImagePath(originalFilename);
-		userUpdateRequest.getBackgroundImagePath(originalFilename);
+	public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateRequest) {
 		try {
-			Users user = userService.updateUser(userUpdateRequest);
+			UpdateResult user = userService.updateUser(userUpdateRequest);
 			return new ResponseEntity<>(user, HttpStatus.OK);
 		} catch (RuntimeException ex) {
 			return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
 		}
+	}
+	@PostMapping("/Upload_UserImages/{UserID}")
+	public ResponseEntity<?> UploadIMG(@PathVariable String UserID, @RequestParam MultipartFile file)
+			throws IOException {
+		System.out.println(UserID);
+		String uploadImage = UserService.uploadImageUser(UserID, file);
+		if (uploadImage != null)
+			return new ResponseEntity<>(HttpStatus.OK);
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
 	}
 }
