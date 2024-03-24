@@ -27,33 +27,4 @@ public class Message_groups {
         
     }
 	
-	public String get_id() {
-		return _id;
-	}
-	public void set_id(String _id) {
-		this._id = _id;
-	}
-	public String getMessage_group_name() {
-		return Message_group_name;
-	}
-	public void setMessage_group_name(String message_group_name) {
-		Message_group_name = message_group_name;
-	}
-	public String getMessage_group_image() {
-		return Message_group_image;
-	}
-	public void setMessage_group_image(String message_group_image) {
-		Message_group_image = message_group_image;
-	}
-	public LastMessage_MsgGroup getLast_message() {
-		return Last_message;
-	}
-	public void setLast_message(LastMessage_MsgGroup last_message) {
-		Last_message = last_message;
-	}
-	
-
-	
-	
-	
 }
