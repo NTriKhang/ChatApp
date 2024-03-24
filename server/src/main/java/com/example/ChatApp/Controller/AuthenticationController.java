@@ -11,6 +11,7 @@ import com.example.ChatApp.dto.SignUpDto;
 
 import java.util.Optional;
 
+import com.example.ChatApp.dto.UserUpdateDto;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -58,5 +59,15 @@ public class AuthenticationController {
 		// System.out.println(token);
 		headers.add(HttpHeaders.SET_COOKIE, "userId=" + user.get()._id + "; HttpOnly; Path=/");
 		return ResponseEntity.ok().headers(headers).body(user.get());
+	}
+	@PostMapping("/update")
+	public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateRequest) {
+
+		try {
+			Users user = userService.updateUser(userUpdateRequest);
+			return new ResponseEntity<>(user, HttpStatus.OK);
+		} catch (RuntimeException ex) {
+			return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+		}
 	}
 }
