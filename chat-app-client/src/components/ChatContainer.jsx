@@ -34,7 +34,7 @@ export default function ChatContainer() {
             <img src="https://cdn.sforum.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg" alt="" />
           </div>
           <div className="username">
-            <h3>{currentUser.Display_name}</h3> {/* Thay thế bằng username thực tế nếu có */}
+            <h3>{currentUser?.Display_name}</h3> {/* Thay thế bằng username thực tế nếu có */}
           </div>
         </div>
         <Logout />
