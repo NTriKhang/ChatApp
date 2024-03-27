@@ -9,6 +9,7 @@ public class UserUpdateDto {
     public String DisplayName;
     public  String Email;
     public String Tag;
+    public Date Birth;
 
     public Date getBirth() {
         return Birth;
@@ -17,30 +18,6 @@ public class UserUpdateDto {
     public void setBirth(Date birth) {
         Birth = birth;
     }
-
-    public String getImagePath() {
-        return ImagePath;
-    }
-
-    public String getBackgroundImagePath() {
-        return BackgroundImagePath;
-    }
-
-    public Date Birth;
-    public String ImagePath;
-    public Date Edited_day;
-
-    public Date getCreated_day() {
-        return Created_day;
-    }
-
-    public void setCreated_day(Date created_day) {
-        Created_day = created_day;
-    }
-
-    public Date Created_day;
-    public String BackgroundImagePath;
-
     public ObjectId getId() {
         return null;
     }
@@ -73,27 +50,4 @@ public class UserUpdateDto {
         Tag = tag;
     }
 
-    public String getImagePath(String originalFilename) {
-        return ImagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        ImagePath = imagePath;
-    }
-
-    public Date getEdited_day() {
-        return Edited_day;
-    }
-
-    public void setEdited_day(Date edited_day) {
-        Edited_day = edited_day;
-    }
-
-    public String getBackgroundImagePath(String originalFilename) {
-        return BackgroundImagePath;
-    }
-
-    public void setBackgroundImagePath(String backgroundImagePath) {
-        BackgroundImagePath = backgroundImagePath;
-    }
 }

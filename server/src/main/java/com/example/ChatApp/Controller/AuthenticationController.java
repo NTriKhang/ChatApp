@@ -1,5 +1,6 @@
 package com.example.ChatApp.Controller;
 
+import com.example.ChatApp.Config.Utility;
 import com.example.ChatApp.Models.Users;
 import com.example.ChatApp.Services.AuthenticationService;
 import com.example.ChatApp.Services.JWTService;
@@ -58,13 +59,17 @@ public class AuthenticationController {
 		if (user.isEmpty())
 			return new ResponseEntity<>(user.get(), HttpStatus.CONFLICT);
 		HttpHeaders headers = new HttpHeaders();
-		System.out.println(user.get()._id);
-		// String token = jwtService.generateToken(userid.get()._id);
-		// System.out.println(token);
-		headers.add(HttpHeaders.SET_COOKIE, "userId=" + user.get()._id + "; HttpOnly; Path=/");
-		return ResponseEntity.ok().headers(headers).body(user.get());
+		
+		Users resUser = user.get();
+		if(!resUser.Image_path.isEmpty())
+			resUser.Image_path = Utility.FilePath.UserImagePath + resUser.Image_path;
+		if(!resUser.Background_image_path.isEmpty())
+			resUser.Background_image_path = Utility.FilePath.UserImagePath + resUser.Background_image_path;
+		
+		headers.add(HttpHeaders.SET_COOKIE, "userId=" + resUser._id + "; HttpOnly; Path=/");
+		return ResponseEntity.ok().headers(headers).body(resUser);
 	}
-	@PostMapping("/update")
+	@PutMapping
 	public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateRequest) {
 		try {
 			UpdateResult user = userService.updateUser(userUpdateRequest);
@@ -77,9 +82,9 @@ public class AuthenticationController {
 	public ResponseEntity<?> UploadIMG(@PathVariable String UserID, @RequestParam MultipartFile file)
 			throws IOException {
 		System.out.println(UserID);
-		String uploadImage = UserService.uploadImageUser(UserID, file);
+		String uploadImage = userService.uploadImageUser(UserID, file);
 		if (uploadImage != null)
-			return new ResponseEntity<>(HttpStatus.OK);
+			return new ResponseEntity<>(uploadImage ,HttpStatus.OK);
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
 	}

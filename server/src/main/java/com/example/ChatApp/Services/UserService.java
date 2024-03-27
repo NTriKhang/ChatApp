@@ -30,7 +30,7 @@ import org.springframework.data.mongodb.core.query.Query;
 @Service
 public class UserService {
 	@Autowired
-	private static UsersRepository usersRepository;
+	private UsersRepository usersRepository;
 	/*
 	 * @Autowired private PasswordEncoder passwordEncoder;
 	 */
@@ -42,8 +42,9 @@ public class UserService {
 	 * }
 	 */
 	@Autowired
-	private static MongoTemplate mongoTemplate;
+	private MongoTemplate mongoTemplate;
 	public static String upLoadDirectory=System.getProperty("user.dir")+"\\src\\main\\resources\\static\\";
+	
 	public Users signup(SignUpDto signUpRequest) {
 
 		Users users = new Users();
@@ -68,8 +69,8 @@ public class UserService {
 
 	public Optional<Users> signin(SignInDto signInDto) {
 		System.out.println(signInDto.Account_name);
-		Optional<Users> user_id = usersRepository.authLogin(signInDto.Account_name, signInDto.Password);
-		return user_id;
+		Optional<Users> user = usersRepository.authLogin(signInDto.Account_name, signInDto.Password);
+		return user;
 	}
 	public UpdateResult updateUser(UserUpdateDto userUpdateRequest) {
 		ObjectId id = new ObjectId(userUpdateRequest.Id);
@@ -81,13 +82,17 @@ public class UserService {
 		long daysBetween = millisBetween / (24 * 60 * 60 * 1000);
 		long millisBetween1 = new Date().getTime() - createDay.getTime();
 		long daysBetween1 = millisBetween / (24 * 60 * 60 * 1000);
-		if (editedDay==null&&millisBetween1<=60) {
+		
+		System.out.println(millisBetween + " " + daysBetween);
+		
+		if (editedDay==null&&daysBetween<=60) {
 			throw new RuntimeException("You can only update your profile every 60 days");
 		}
-		if (millisBetween<=60) {
+		if (daysBetween1<=60) {
 			throw new RuntimeException("You can only update your profile every 60 days");
 		}
-		if (usersRepository.findByEmail(userUpdateRequest.getEmail()).isPresent()) {
+		
+		if (usersRepository.findByEmailExceptId(userUpdateRequest.Email, userUpdateRequest.Id).isPresent()) {
 			throw new RuntimeException("Email is already in use");
 		}
 
@@ -95,14 +100,12 @@ public class UserService {
 				.set("Display_name", userUpdateRequest.getDisplayName())
 				.set("Email", userUpdateRequest.getEmail())
 				.set("Tag", userUpdateRequest.getTag())
-				.set("Image_path", userUpdateRequest.getImagePath())
 				.set("Birth", userUpdateRequest.getBirth())
-				.set("Background_image_path", userUpdateRequest.getBackgroundImagePath())
 				.set("Edited_day", new Date());
 
 		return mongoTemplate.updateFirst(query, update, Users.class);
 	}
-	public static String uploadImageUser(String User_Id, MultipartFile file) throws IOException {
+	public String uploadImageUser(String User_Id, MultipartFile file) throws IOException {
 		ObjectId id = new ObjectId(User_Id);
 		String folderPath =upLoadDirectory + Utility.FilePath.UserImagePath;
 		String fileName = UUID.randomUUID() + file.getOriginalFilename();
@@ -121,7 +124,7 @@ public class UserService {
 			// Viết file mới lên đường dẫn đã chọn
 			Files.write(Paths.get(filePath), file.getBytes());
 
-			return filePath;
+			return Utility.FilePath.UserImagePath + fileName;
 		}
 
 		return null;
