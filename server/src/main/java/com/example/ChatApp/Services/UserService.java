@@ -1,30 +1,36 @@
 package com.example.ChatApp.Services;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
+import com.example.ChatApp.Config.Utility;
+import com.example.ChatApp.dto.UserUpdateDto;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-/*import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;*/
-/*import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;*/
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.example.ChatApp.Models.Users;
 import com.example.ChatApp.Repositories.UsersRepository;
-import com.example.ChatApp.dto.IdDto;
+
 import com.example.ChatApp.dto.SignInDto;
 import com.example.ChatApp.dto.SignUpDto;
+import org.springframework.web.multipart.MultipartFile;
+
+import org.springframework.data.mongodb.core.query.Query;
+
 
 @Service
 public class UserService {
 	@Autowired
-	private UsersRepository usersRepository;
+	private static UsersRepository usersRepository;
 	/*
 	 * @Autowired private PasswordEncoder passwordEncoder;
 	 */
@@ -35,6 +41,9 @@ public class UserService {
 	 * 
 	 * }
 	 */
+	@Autowired
+	private static MongoTemplate mongoTemplate;
+	public static String upLoadDirectory=System.getProperty("user.dir")+"\\src\\main\\resources\\static\\";
 	public Users signup(SignUpDto signUpRequest) {
 
 		Users users = new Users();
@@ -61,5 +70,60 @@ public class UserService {
 		System.out.println(signInDto.Account_name);
 		Optional<Users> user_id = usersRepository.authLogin(signInDto.Account_name, signInDto.Password);
 		return user_id;
+	}
+	public UpdateResult updateUser(UserUpdateDto userUpdateRequest) {
+		ObjectId id = new ObjectId(userUpdateRequest.Id);
+		Query query = new Query(Criteria.where("_id").is(id));
+
+		Date editedDay = mongoTemplate.findOne(query, Users.class).Edited_day;
+		Date createDay = mongoTemplate.findOne(query, Users.class).Created_day;
+		long millisBetween = new Date().getTime() - editedDay.getTime();
+		long daysBetween = millisBetween / (24 * 60 * 60 * 1000);
+		long millisBetween1 = new Date().getTime() - createDay.getTime();
+		long daysBetween1 = millisBetween / (24 * 60 * 60 * 1000);
+		if (editedDay==null&&millisBetween1<=60) {
+			throw new RuntimeException("You can only update your profile every 60 days");
+		}
+		if (millisBetween<=60) {
+			throw new RuntimeException("You can only update your profile every 60 days");
+		}
+		if (usersRepository.findByEmail(userUpdateRequest.getEmail()).isPresent()) {
+			throw new RuntimeException("Email is already in use");
+		}
+
+		Update update = new Update()
+				.set("Display_name", userUpdateRequest.getDisplayName())
+				.set("Email", userUpdateRequest.getEmail())
+				.set("Tag", userUpdateRequest.getTag())
+				.set("Image_path", userUpdateRequest.getImagePath())
+				.set("Birth", userUpdateRequest.getBirth())
+				.set("Background_image_path", userUpdateRequest.getBackgroundImagePath())
+				.set("Edited_day", new Date());
+
+		return mongoTemplate.updateFirst(query, update, Users.class);
+	}
+	public static String uploadImageUser(String User_Id, MultipartFile file) throws IOException {
+		ObjectId id = new ObjectId(User_Id);
+		String folderPath =upLoadDirectory + Utility.FilePath.UserImagePath;
+		String fileName = UUID.randomUUID() + file.getOriginalFilename();
+		String filePath = folderPath + fileName;
+		Optional<Users> user = usersRepository.findById(id);
+		if (!user.isPresent())
+			return null;
+		Query query = new Query(Criteria.where("_id").is(id));
+		Update update = new Update().set("Image_path", fileName)
+									.set("Background_image_path",fileName);
+
+		// Cập nhật ảnh đại diện
+		UpdateResult result = mongoTemplate.updateFirst(query, update, Users.class);
+		if (result.wasAcknowledged()) {
+
+			// Viết file mới lên đường dẫn đã chọn
+			Files.write(Paths.get(filePath), file.getBytes());
+
+			return filePath;
+		}
+
+		return null;
 	}
 }
