@@ -17,10 +17,6 @@ public interface MessageRepository extends MongoRepository<Messages, String>  {
 	})
 	List<Messages> findMessagesByGroupId(ObjectId groupId, String userId, int skip, int limit);
 	
-	@Query(value = "{ '_id': ?0 }")
-	Messages findMessageById(ObjectId messageObjectId);
-	
-	
 	@Query(value = "{ '_id': ?0 }", delete = true)
 	Messages deleteMessageByIdOfOwner(ObjectId messageObjectId);
 	
