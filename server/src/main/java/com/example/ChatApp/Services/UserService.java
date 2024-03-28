@@ -84,16 +84,16 @@ public class UserService {
 		long daysBetween1 = millisBetween / (24 * 60 * 60 * 1000);
 		
 		System.out.println(millisBetween + " " + daysBetween);
-		
+
 		if (editedDay==null&&daysBetween<=60) {
-			throw new RuntimeException("You can only update your profile every 60 days");
+			return null;
 		}
 		if (daysBetween1<=60) {
-			throw new RuntimeException("You can only update your profile every 60 days");
+			return null;
 		}
-		
+
 		if (usersRepository.findByEmailExceptId(userUpdateRequest.Email, userUpdateRequest.Id).isPresent()) {
-			throw new RuntimeException("Email is already in use");
+			return null;
 		}
 
 		Update update = new Update()
@@ -105,28 +105,49 @@ public class UserService {
 
 		return mongoTemplate.updateFirst(query, update, Users.class);
 	}
-	public String uploadImageUser(String User_Id, MultipartFile file) throws IOException {
-		ObjectId id = new ObjectId(User_Id);
-		String folderPath =upLoadDirectory + Utility.FilePath.UserImagePath;
+	public String uploadUserProfileImage(String userId, MultipartFile file) throws IOException {
+		ObjectId id = new ObjectId(userId);
+		String folderPath = upLoadDirectory + Utility.FilePath.UserImagePath;
 		String fileName = UUID.randomUUID() + file.getOriginalFilename();
 		String filePath = folderPath + fileName;
 		Optional<Users> user = usersRepository.findById(id);
-		if (!user.isPresent())
+
+		if (!user.isPresent()) {
 			return null;
-		Query query = new Query(Criteria.where("_id").is(id));
-		Update update = new Update().set("Image_path", fileName)
-									.set("Background_image_path",fileName);
-
-		// Cập nhật ảnh đại diện
-		UpdateResult result = mongoTemplate.updateFirst(query, update, Users.class);
-		if (result.wasAcknowledged()) {
-
-			// Viết file mới lên đường dẫn đã chọn
-			Files.write(Paths.get(filePath), file.getBytes());
-
-			return Utility.FilePath.UserImagePath + fileName;
 		}
 
-		return null;
+		Query query = new Query(Criteria.where("_id").is(id));
+		Update update = new Update().set("Image_path", fileName);
+		UpdateResult result = mongoTemplate.updateFirst(query, update, Users.class);
+
+		if (result.wasAcknowledged()) {
+			Files.write(Paths.get(filePath), file.getBytes());
+			return Utility.FilePath.UserImagePath + fileName;
+		} else {
+			return null;
+		}
+	}
+
+	public String uploadUserBackgroundImage(String userId, MultipartFile file) throws IOException {
+		ObjectId id = new ObjectId(userId);
+		String folderPath = upLoadDirectory + Utility.FilePath.UserImagePath;
+		String fileName = UUID.randomUUID() + file.getOriginalFilename();
+		String filePath = folderPath + fileName;
+		Optional<Users> user = usersRepository.findById(id);
+
+		if (!user.isPresent()) {
+			return null;
+		}
+
+		Query query = new Query(Criteria.where("_id").is(id));
+		Update update = new Update().set("Background_image_path", fileName);
+		UpdateResult result = mongoTemplate.updateFirst(query, update, Users.class);
+
+		if (result.wasAcknowledged()) {
+			Files.write(Paths.get(filePath), file.getBytes());
+			return Utility.FilePath.UserImagePath + fileName;
+		} else {
+			return null;
+		}
 	}
 }
