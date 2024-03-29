@@ -130,7 +130,7 @@ public class UserService {
 
 	public String uploadUserBackgroundImage(String userId, MultipartFile file) throws IOException {
 		ObjectId id = new ObjectId(userId);
-		String folderPath = upLoadDirectory + Utility.FilePath.UserImagePath;
+		String folderPath = upLoadDirectory + Utility.FilePath.GroupImagePath;
 		String fileName = UUID.randomUUID() + file.getOriginalFilename();
 		String filePath = folderPath + fileName;
 		Optional<Users> user = usersRepository.findById(id);
