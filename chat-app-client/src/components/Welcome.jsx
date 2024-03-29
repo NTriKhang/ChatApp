@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Robot from "../assets/robot.gif";
+import {  getCurrentUserLocal } from "../utils/LocalStorage"
 export default function Welcome() {
-  const [userName, setUserName] = useState("");
-  useEffect(async () => {
-    setUserName(
-      await JSON.parse(
-        localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-      ).username
-    );
-  }, []);
+  const currentUser = getCurrentUserLocal();
   return (
     <Container>
       <img src={Robot} alt="" />
       <h1>
-        Welcome, <span>{userName}!</span>
+        Welcome, <span>{currentUser?.Display_name}!</span>
       </h1>
       <h3>Please select a chat to Start messaging.</h3>
     </Container>
@@ -25,7 +19,7 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  color: white;
+  color: #0f0c29;
   flex-direction: column;
   img {
     height: 20rem;

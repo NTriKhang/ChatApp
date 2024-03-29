@@ -29,8 +29,11 @@ export default function Contacts({  changeChat }) {
   }, []); 
 
   const changeCurrentChat = (index, contact) => {
-    setCurrentSelected(index);
-    changeChat(contact);
+  setCurrentSelected(index);
+  //const messageGroupId = contact.MessageGroupId;
+  //const groupChatName = contact.Message_group_name; // Thêm thông tin về tên group chat
+  //alert(`ID của Message Group là: ${messageGroupId}, Tên Group Chat là: ${groupChatName}`); // Thêm tên group chat vào thông báo
+  changeChat(contact);
   };
 
   return (
@@ -43,25 +46,25 @@ export default function Contacts({  changeChat }) {
           <div className="contacts">
             {contacts.map((contact, index) => (
               <div
-                key={contact._id}
+                key={contact.MessageGroupId}
                 className={`contact ${index === currentSelected ? "selected" : ""}`}
-                onClick={() => changeCurrentChat(index, contact)}
+                onClick={() => changeCurrentChat(index, contact) }
               >
                 <div className="avatar">
                   {
-                    contact.avatar?
-                    <img src={`data:image/svg+xml;base64,${contact.avatarImage}`} alt="" />:
+                    contact.Message_group_image?
+                    <img src={`http://localhost:8080/${contact.Message_group_image}`} alt="" />:
                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU" alt="Defaut Image" />
                   }
                   
                 </div>
                 <div className="username">
                   <h3>{contact.username}</h3>
-                  <h2>{contact.Message_group_name}</h2>
+                  <h3>{contact.Message_group_name}</h3>
                   {
-                    contact.last_message?
-                    <p>{contact.last_message }</p> :
-                    <p>Chưa có tin nhắn</p>
+                    contact.last_message ?
+                    <p>{contact.last_message.length >= 26 ? contact.last_message.slice(0, 21) + '...' : contact.last_message }</p> :
+                    <p>Chưa có tin nhắn cuối</p>
                   }
                   {contact.is_read ? <span>✅</span> : <span>❌</span>}
                 </div>
@@ -88,7 +91,6 @@ export default function Contacts({  changeChat }) {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100vh;
   background-color: #0F0C29; /* Deep blue background */
   
   .brand {
@@ -142,10 +144,11 @@ const Container = styled.div`
       }
       .username {
         margin-left: 15px;
-        padding-bottom: 15px;
+        padding: 15px 0;
+        
         h3, p {
           color: #CCC;
-          margin: 0 10px 0 0;
+          margin: 0px 10px 0 0;
           display: inline-block;
         }
         span {

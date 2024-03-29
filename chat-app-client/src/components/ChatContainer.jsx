@@ -6,18 +6,21 @@ import axios from "axios";
 import ChatInput from "./ChatInput";
 import {  getCurrentUserLocal } from "../utils/LocalStorage"
 
-export default function ChatContainer() {
+export default function ChatContainer({ currentChat }) {
   const currentUser = getCurrentUserLocal();
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
-
+  const { MessageGroupId, Message_group_name, Message_group_image } = currentChat;
   // Cập nhật hàm để sử dụng ID người dùng cố định
   const fetchMessages = async () => {
-    const userId = "65dfd1f51e074622e7cd00c1"; // Sử dụng ID cố định
-    const response = await axios.get(`http://localhost:8080/api/v1/messages/${currentUser._id}`);
+    const messGroupID = "65dfd1f51e074622e7cd00c1"; // Sử dụng ID cố định
+    const response = await axios.get(`http://localhost:8080/api/v1/messages/${MessageGroupId}`);//currentUser._id
     setMessages(response.data);
   };
 
+  useEffect(() => {
+    // Code xử lý tương ứng với currentChat
+  }, [currentChat]);
   useEffect(() => {
     fetchMessages();
   }, []); // Chỉ gọi một lần khi component được mount
@@ -31,10 +34,23 @@ export default function ChatContainer() {
       <div className="chat-header">
         <div className="user-details">
           <div className="avatar">
-            <img src="https://cdn.sforum.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg" alt="" />
+                {
+                  Message_group_image?
+                  <img src={`http://localhost:8080/${Message_group_image}`} alt="" />:
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU" alt="Defaut Image" />
+                }
           </div>
-          <div className="username">
-            <h3>{currentUser?.Display_name}</h3> {/* Thay thế bằng username thực tế nếu có */}
+          <div className="nameChat">
+            {Message_group_name?
+              <h3>{Message_group_name}</h3>:
+              <h3>Không có tên</h3>
+            }
+          </div>
+          <div className="editName">
+            <button className="editButton" > 
+              {/* onClick={handleEditName} */}
+              <p>✎</p>
+            </button>
           </div>
         </div>
         <Logout />
@@ -75,7 +91,6 @@ export default function ChatContainer() {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100vh; 
   background-color: #f0f0f0; 
   width: 100%;
 
@@ -100,8 +115,27 @@ const Container = styled.div`
         border: 2px solid #ffffff; 
       }
 
-      .username h3 {
+
+      .nameChat h3 {
         margin: 0; 
+      }
+
+      
+      .editName .editButton {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .editName .editButton p {
+        color: #fff; 
+        font-size: 20px;
+        padding-bottom:5px;
+      }
+
+      .editName .editButton:hover p {
+        color: #666; 
       }
     }
   }
