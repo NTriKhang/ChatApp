@@ -64,6 +64,8 @@ public class UserService {
 		users.Birth = signUpRequest.Birth;
 		users.Created_day = new Date();
 		users.Tag = signUpRequest.Tag;
+		users.Background_image_path = "";
+		users.Image_path = "";
 		return usersRepository.save(users);
 	}
 
