@@ -8,25 +8,42 @@ import Welcome from "../components/Welcome";
 const ChatPage = () => {
   const [currentChat, setCurrentChat] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
-console.log(123123);
+  const [contacts, setContacts] = useState([]);
 
+  const updateContactInfo = (updatedContact) => {
+    const updatedContacts = contacts.map(contact => {
+      if (contact.MessageGroupId === updatedContact.MessageGroupId) {
+        return updatedContact;
+      }
+      return contact;
+    });
+    setContacts(updatedContacts); 
+  };
   const changeChat = (newChat) => {
     setCurrentChat(newChat);
   };
+  
   const changeCurrentChat = (index, contact) => {
     setCurrentSelected(index);
-    changeChat(contact); // Cập nhật currentChat với contact được chọn
+    changeChat(contact); 
     setShowWelcome(false);
   };
-  
+  const updateGroupName = (newGroupName) => {
+    setCurrentChat(prevChat => ({
+      ...prevChat,
+      Message_group_name: newGroupName
+    }));
+  };
   return (
     <PageContainer>
       <div className='container'>
-      <Contacts changeChat={changeChat} changeCurrentChat={changeCurrentChat} />
-        {currentChat ? ( // Nếu currentChat tồn tại, hiển thị ChatContainer
+      <Contacts 
+            changeChat={changeChat} 
+            changeCurrentChat={changeCurrentChat} />
+        {currentChat ? ( 
           <ChatContainer currentChat={currentChat} />
         ) : (
-          <Welcome /> // Ngược lại, hiển thị Welcome component
+          <Welcome /> 
         )}
       </div>
     </PageContainer>
