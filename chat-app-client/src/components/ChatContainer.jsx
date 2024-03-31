@@ -8,7 +8,7 @@ import { getCurrentUserLocal } from "../utils/LocalStorage";
 import UpdateNameMG from "./UpdateNameMG";
 import UploadImages from "./UploadImages";
 
-export default function ChatContainer({ currentChat }) {
+export default function ChatContainer({ currentChat, onSave }) {
   const currentUser = getCurrentUserLocal();
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
@@ -16,7 +16,6 @@ export default function ChatContainer({ currentChat }) {
   const { MessageGroupId, Message_group_name, Message_group_image } = chat; // Sử dụng biến chat thay vì currentChat
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImageDialog, setShowImageDialog] = useState(false);
-  const [imageUploaded, setImageUploaded] = useState(false);
 
   // Cập nhật hàm để sử dụng ID người dùng cố định
   const fetchMessages = async () => {
@@ -30,6 +29,13 @@ export default function ChatContainer({ currentChat }) {
   // Callback function để cập nhật tên nhóm trong state chat
   const updateGroupName = (newName) => {
     setChat({ ...chat, Message_group_name: newName });
+    onSave?.(newName);
+  };
+  const uploadImg = (newImg) => {
+    var url = newImg.replace("http://localhost:8080/api/v1/message_group/Upload_Images/", "Images\\GroupImage\\");
+    setChat({ ...chat, 
+      Message_group_image: url });
+    onSave?.(newImg);
   };
   const openImageDialog = () => {
     setShowImageDialog(true);
@@ -44,19 +50,11 @@ export default function ChatContainer({ currentChat }) {
 
   useEffect(() => {
     fetchMessages();
-  }, []); // Chỉ gọi một lần khi component được mount
+  }, []); 
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  useEffect(() => {
-    if (imageUploaded) {
-      console.log("Đã thay ảnh");
-      fetchMessages(); 
-      setImageUploaded(false); 
-    }
-  }, [imageUploaded]);
 
   return (
     <Container>
@@ -98,7 +96,7 @@ export default function ChatContainer({ currentChat }) {
             <UploadImages 
                   closeDialog={closeImageDialog} 
                   GroupID={MessageGroupId} 
-                  onImageUpload={() => setImageUploaded(true)} />  
+                  onImageUpload={uploadImg} />  
             <CloseButton onClick={closeImageDialog}>&times;</CloseButton>
           </ModalContent>
         </Modal>

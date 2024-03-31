@@ -4,13 +4,11 @@ import Logo from "../assets/logo.svg";
 import {  getCurrentUserLocal } from "../utils/LocalStorage"
 import axios from 'axios';
 
-export default function Contacts({  changeChat }) {
+export default function Contacts({  changeChat, onSave }) {
   const currentUser = getCurrentUserLocal();
   const [contacts, setContacts] = useState([]);
   const [currentUserImage, setCurrentUserImage] = useState('');
   const [currentSelected, setCurrentSelected] = useState(null);
-
-
 
   useEffect(() => {
     const fetchUserGroups = async () => {
@@ -24,15 +22,11 @@ export default function Contacts({  changeChat }) {
             console.error('There was a problem with fetching user groups:', error);
         }
     };
-
     fetchUserGroups();
-}, []);
+}, [onSave]);
   
   const changeCurrentChat = (index, contact) => {
   setCurrentSelected(index);
-  //const messageGroupId = contact.MessageGroupId;
-  //const groupChatName = contact.Message_group_name; // Thêm thông tin về tên group chat
-  //alert(`ID của Message Group là: ${messageGroupId}, Tên Group Chat là: ${groupChatName}`); // Thêm tên group chat vào thông báo
   changeChat(contact);
   };
 

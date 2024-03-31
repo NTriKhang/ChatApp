@@ -19,9 +19,10 @@ function UploadImages({ closeDialog, GroupID, onImageUpload }) {
                 }
             });
 
-            console.log('Upload successful:', response.data);
+            alert('Tải lên thành công');
+            console.log('Upload successful:', response);
             closeDialog();
-            onImageUpload(); 
+            onImageUpload(response?.config?.url); 
         } catch (error) {
             console.error('Error uploading image:', error);
         }

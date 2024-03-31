@@ -9,6 +9,11 @@ const ChatPage = () => {
   const [currentChat, setCurrentChat] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
   const [contacts, setContacts] = useState([]);
+  const [updatename, setUpdateName] = useState('');
+
+  const onSave = (newName) => {
+    setUpdateName(newName);
+  }
 
   const updateContactInfo = (updatedContact) => {
     const updatedContacts = contacts.map(contact => {
@@ -39,9 +44,15 @@ const ChatPage = () => {
       <div className='container'>
       <Contacts 
             changeChat={changeChat} 
-            changeCurrentChat={changeCurrentChat} />
+            changeCurrentChat={changeCurrentChat} 
+            onSave={updatename}/>
+
+
+
         {currentChat ? ( 
-          <ChatContainer currentChat={currentChat} />
+          <ChatContainer 
+          currentChat={currentChat} 
+          onSave={onSave}/>
         ) : (
           <Welcome /> 
         )}
