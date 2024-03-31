@@ -32,9 +32,8 @@ export default function ChatContainer({ currentChat, onSave }) {
     onSave?.(newName);
   };
   const uploadImg = (newImg) => {
-    var url = newImg.replace("http://localhost:8080/api/v1/message_group/Upload_Images/", "Images\\GroupImage\\");
     setChat({ ...chat, 
-      Message_group_image: url });
+      Message_group_image: newImg });
     onSave?.(newImg);
   };
   const openImageDialog = () => {
