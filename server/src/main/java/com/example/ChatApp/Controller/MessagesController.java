@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.objenesis.instantiator.basic.NewInstanceInstantiator;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,13 +59,13 @@ public class MessagesController {
 			return new ResponseEntity<List<Messages>>(messages, HttpStatus.OK);
 	}
 	@GetMapping("/{group_id}")
-	public ResponseEntity<List<Messages>> getMessages(@CookieValue(name = "userId") String userId,
+	public ResponseEntity<List<Messages>> getMessages(@CookieValue(name = "userId",required = false) String userId,
 													  @PathVariable("group_id") String group_id,
 													  @RequestParam(value = "page", defaultValue = "1") int page) {
 			List<Messages> messages = messageService.getMessagesByGroupId(group_id, userId, page);
 			System.out.println(messages.size());
 			return new ResponseEntity<List<Messages>>(messages, HttpStatus.OK);
-		}
+	}
 	@DeleteMapping("/deleteMessage/{message_id}")
 	public ResponseEntity<Messages> deleteMessage(@CookieValue(name = "userId") String userId,
 											     @PathVariable("message_id") String message_id) {
