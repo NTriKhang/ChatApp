@@ -70,7 +70,7 @@ public class MessageGroupController {
 		System.out.println(GroupID);
 		String uploadImage = messageGroupService.uploadImageMessageGroup(GroupID, file);
 		if (uploadImage != null)
-			return new ResponseEntity<>(HttpStatus.OK);
+			return new ResponseEntity<>(uploadImage, HttpStatus.OK);
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
 	}

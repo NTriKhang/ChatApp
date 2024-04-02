@@ -48,7 +48,7 @@ public class MessageService {
 	
 	public Messages deleteMessagesById(String messageId, String userId) {
 		ObjectId objectId = new ObjectId(messageId);
-		Messages message = messageRepository.findMessageById(objectId);
+		Messages message = messageRepository.findMessagesById(objectId);
 		if(message.Sender_user.user_id.equals(userId)) {
 			return messageRepository.deleteMessageByIdOfOwner(objectId);
 		}

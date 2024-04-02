@@ -78,14 +78,22 @@ public class AuthenticationController {
 			return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
-	@PostMapping("/Upload_UserImages/{UserID}")
-	public ResponseEntity<?> UploadIMG(@PathVariable String UserID, @RequestParam MultipartFile file)
+	@PostMapping("/Upload_Image_path/{UserID}")
+	public ResponseEntity<?> uploadUserProfileImage(@PathVariable String UserID, @RequestParam MultipartFile file)
 			throws IOException {
-		System.out.println(UserID);
-		String uploadImage = userService.uploadImageUser(UserID, file);
+		String uploadImage = userService.uploadUserProfileImage(UserID, file);
 		if (uploadImage != null)
-			return new ResponseEntity<>(uploadImage ,HttpStatus.OK);
+			return new ResponseEntity<>(uploadImage, HttpStatus.OK);
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
 	}
+
+	@PostMapping("/Upload_Background_Image_path/{UserID}")
+	public ResponseEntity<?> uploadUserBackgroundImage(@PathVariable String UserID, @RequestParam MultipartFile file)
+			throws IOException {
+		String uploadImage = userService.uploadUserBackgroundImage(UserID, file);
+		if (uploadImage != null)
+			return new ResponseEntity<>(uploadImage, HttpStatus.OK);
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	}
+
 }

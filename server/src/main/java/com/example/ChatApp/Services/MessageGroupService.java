@@ -115,7 +115,7 @@ public class MessageGroupService {
 			} else {
 				System.out.println("File does not exist.");
 			}
-			return filePath;
+			return Utility.FilePath.GroupImagePath + fileName;
 		}
 
 		return null;
