@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import ChatInput from "./ChatInput";
 import { getCurrentUserLocal } from "../utils/LocalStorage";
+import UpdateNameMG from "./UpdateNameMG";
+import UploadImages from "./UploadImages";
 
 export default function ChatContainer({ currentChat }) {
   const [messages, setMessages] = useState([]);
@@ -76,7 +78,27 @@ export default function ChatContainer({ currentChat }) {
       setLoading(false);
     }
   };
+  const handleCloseEditDialog = () => {
+    setShowEditDialog(false);
+  };
 
+  // Callback function để cập nhật tên nhóm trong state chat
+  const updateGroupName = (newName) => {
+    setChat({ ...chat, Message_group_name: newName });
+    onSave?.(newName);
+  };
+  const uploadImg = (newImg) => {
+    setChat({ ...chat, 
+      Message_group_image: newImg });
+    onSave?.(newImg);
+  };
+  const openImageDialog = () => {
+    setShowImageDialog(true);
+  };
+
+  const closeImageDialog = () => {
+    setShowImageDialog(false);
+  };
   useEffect(() => {
     const handleScroll = (e) => {
       const { scrollTop } = e.currentTarget;
@@ -104,6 +126,11 @@ export default function ChatContainer({ currentChat }) {
   }, [initialLoad, isScrolled, reachedEnd]);
 
   useEffect(() => {
+    fetchMessages();
+  }, []); 
+
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const initialMessages = await fetchMessages(currentPage.current);
@@ -120,29 +147,48 @@ export default function ChatContainer({ currentChat }) {
     <Container>
       <div className="chat-header">
         <div className="user-details">
-          <div className="avatar">
-            {
-              Message_group_image ?
-                <img src={`http://localhost:8080/${Message_group_image}`} alt="" /> :
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU" alt="Defaut Image" />
-            }
-          </div>
+        <div className="avatar" onClick={openImageDialog}> 
+        {
+            Message_group_image?
+            <img src={`http://localhost:8080/${Message_group_image}`} alt="" />:
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU" alt="Defaut Image" />
+          
+        }
+        </div>
           <div className="nameChat">
-            {Message_group_name ?
-              <h3>{Message_group_name}</h3> :
+            {Message_group_name ? (
+              <h3>{Message_group_name}</h3>
+            ) : (
               <h3>Không có tên</h3>
-            }
+            )}
           </div>
           <div className="editName">
-            <button className="editButton" >
-              {/* onClick={handleEditName} */}
+            <button className="editButton" onClick={() => setShowEditDialog(true)}>
               <p>✎</p>
             </button>
+            {showEditDialog && (
+              <UpdateNameMG
+                handleClose={handleCloseEditDialog}
+                groupId={MessageGroupId}
+                updateGroupName={updateGroupName} // Truyền hàm callback vào component con
+              />
+            )}
           </div>
         </div>
         <Logout />
       </div>
-      <div className="chat-messages" ref={scrollRef}>
+      {showImageDialog && (
+         <Modal onClick={closeImageDialog}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <UploadImages 
+                  closeDialog={closeImageDialog} 
+                  GroupID={MessageGroupId} 
+                  onImageUpload={uploadImg} />  
+            <CloseButton onClick={closeImageDialog}>&times;</CloseButton>
+          </ModalContent>
+        </Modal>
+      )}
+       <div className="chat-messages" ref={scrollRef}>
         {messages.slice().reverse().map((message, index) => (
           <MessageBubble ref={index === messages.length - 1 ? scrollRef : null} key={uuidv4()} fromSelf={message.fromSelf}>
             {message.fromSelf ? null : <div className="sender-name">{message.Sender_user.user_name}</div>}
@@ -177,7 +223,7 @@ export default function ChatContainer({ currentChat }) {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  background-color: #f0f0f0; 
+  background-color: #f0f0f0;
   width: 100%;
 
   .chat-header {
@@ -197,12 +243,12 @@ const Container = styled.div`
       .avatar img {
         height: 50px;
         width: 50px;
-        border-radius: 50%; 
-        border: 2px solid #ffffff; 
+        border-radius: 50%;
+        border: 2px solid #ffffff;
       }
-      
+
       .nameChat h3 {
-        margin: 0; 
+        margin: 0;
       }
 
       .editName .editButton {
@@ -213,13 +259,13 @@ const Container = styled.div`
       }
 
       .editName .editButton p {
-        color: #fff; 
+        color: #fff;
         font-size: 20px;
-        padding-bottom:5px;
+        padding-bottom: 5px;
       }
 
       .editName .editButton:hover p {
-        color: #666; 
+        color: #666;
       }
     }
   }
@@ -231,50 +277,81 @@ const Container = styled.div`
     display: flex;
     flex-direction: column;
     gap: 10px;
+
     overflow-y: auto; 
     max-height: calc(100vh - 200px);
 
-  .message {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: #ffffff;
-  width: fit-content;
-}
 
-.sended {
-  align-self: flex-end;
-  background-color: #00b4d8;
-  color: white;
-}
+    .message {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 1rem;
+      border-radius: 8px;
+      background-color: #ffffff;
+      width: fit-content;
+    }
 
-.recieved {
-  align-self: flex-start;
-  background-color: #ffffff;
-}
+    .sended {
+      align-self: flex-end;
+      background-color: #00b4d8;
+      color: white;
+    }
 
-.content img {
-  max-width: 100%; 
-  max-height: 200px; 
-  border-radius: 8px; 
-  margin-top: 10px; 
-  object-fit: contain; 
-}
+    .recieved {
+      align-self: flex-start;
+      background-color: #ffffff;
+    }
 
+    .content img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+      margin-top: 10px;
+      object-fit: contain;
+    }
 
-.message-info {
-  font-size: 0.75rem;
-  color: #666;
-  text-align: right;
-}
+    .message-info {
+      font-size: 0.75rem;
+      color: #666;
+      text-align: right;
+    }
 
-.message-info span {
-  display: block; 
-}
+    .message-info span {
+      display: block;
+    }
   }
+`;
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 12, 41, 0.6); /* Màu nền với độ mờ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalContent = styled.div`
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #333;
 `;
 
 const MessageBubble = styled.div`
@@ -284,7 +361,7 @@ const MessageBubble = styled.div`
   padding: 1rem;
   border-radius: 8px;
   background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
   width: fit-content;
   max-width: 70%;
@@ -318,21 +395,20 @@ const MessageBubble = styled.div`
       border-radius: 8px;
       margin-top: 10px;
     }
-    
+
     .message-info {
       display: none;
     }
     .message-time {
       position: absolute;
-      right: 10px; 
-      bottom: 10px; 
-      font-size: 0.75rem; 
-      color: #666; 
+      right: 10px;
+      bottom: 10px;
+      font-size: 0.75rem;
+      color: #666;
     }
   }
   .message-time {
-
-    text-align:right;
+    text-align: right;
   }
   .message-info {
     font-size: 0.75rem;
