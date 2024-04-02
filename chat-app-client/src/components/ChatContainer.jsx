@@ -8,7 +8,7 @@ import { getCurrentUserLocal } from "../utils/LocalStorage";
 import UpdateNameMG from "./UpdateNameMG";
 import UploadImages from "./UploadImages";
 
-export default function ChatContainer({ currentChat }) {
+export default function ChatContainer({ currentChat, onSave }) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
   const { MessageGroupId, Message_group_name, Message_group_image } = currentChat;
@@ -18,7 +18,9 @@ export default function ChatContainer({ currentChat }) {
   const [initialLoad, setInitialLoad] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const lastFetchLength = useRef(0);
-
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showImageDialog, setShowImageDialog] = useState(false);
+  const [chat, setChat] = useState(currentChat);
 
   const fetchMessages = async (page) => {
     try {
