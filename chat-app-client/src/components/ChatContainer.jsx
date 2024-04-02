@@ -4,23 +4,52 @@ import Logout from "./Logout";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import ChatInput from "./ChatInput";
-import {  getCurrentUserLocal } from "../utils/LocalStorage"
+import { getCurrentUserLocal } from "../utils/LocalStorage";
+import UpdateNameMG from "./UpdateNameMG";
+import UploadImages from "./UploadImages";
 
-export default function ChatContainer() {
+export default function ChatContainer({ currentChat, onSave }) {
   const currentUser = getCurrentUserLocal();
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
+  const [chat, setChat] = useState(currentChat); // Lưu trữ thông tin currentChat
+  const { MessageGroupId, Message_group_name, Message_group_image } = chat; // Sử dụng biến chat thay vì currentChat
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showImageDialog, setShowImageDialog] = useState(false);
 
   // Cập nhật hàm để sử dụng ID người dùng cố định
   const fetchMessages = async () => {
-    const userId = "65dfd1f51e074622e7cd00c1"; // Sử dụng ID cố định
-    const response = await axios.get(`http://localhost:8080/api/v1/messages/${currentUser._id}`);
+    const response = await axios.get(`http://localhost:8080/api/v1/messages/${MessageGroupId}`); //currentUser._id
     setMessages(response.data);
   };
+  const handleCloseEditDialog = () => {
+    setShowEditDialog(false);
+  };
+
+  // Callback function để cập nhật tên nhóm trong state chat
+  const updateGroupName = (newName) => {
+    setChat({ ...chat, Message_group_name: newName });
+    onSave?.(newName);
+  };
+  const uploadImg = (newImg) => {
+    setChat({ ...chat, 
+      Message_group_image: newImg });
+    onSave?.(newImg);
+  };
+  const openImageDialog = () => {
+    setShowImageDialog(true);
+  };
+
+  const closeImageDialog = () => {
+    setShowImageDialog(false);
+  };
+  useEffect(() => {
+    // Code xử lý tương ứng với chat
+  }, [chat]);
 
   useEffect(() => {
     fetchMessages();
-  }, []); // Chỉ gọi một lần khi component được mount
+  }, []); 
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,15 +59,47 @@ export default function ChatContainer() {
     <Container>
       <div className="chat-header">
         <div className="user-details">
-          <div className="avatar">
-            <img src="https://cdn.sforum.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg" alt="" />
+        <div className="avatar" onClick={openImageDialog}> 
+        {
+            Message_group_image?
+            <img src={`http://localhost:8080/${Message_group_image}`} alt="" />:
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU" alt="Defaut Image" />
+          
+        }
+        </div>
+          <div className="nameChat">
+            {Message_group_name ? (
+              <h3>{Message_group_name}</h3>
+            ) : (
+              <h3>Không có tên</h3>
+            )}
           </div>
-          <div className="username">
-            <h3>{currentUser?.Display_name}</h3> {/* Thay thế bằng username thực tế nếu có */}
+          <div className="editName">
+            <button className="editButton" onClick={() => setShowEditDialog(true)}>
+              <p>✎</p>
+            </button>
+            {showEditDialog && (
+              <UpdateNameMG
+                handleClose={handleCloseEditDialog}
+                groupId={MessageGroupId}
+                updateGroupName={updateGroupName} // Truyền hàm callback vào component con
+              />
+            )}
           </div>
         </div>
         <Logout />
       </div>
+      {showImageDialog && (
+         <Modal onClick={closeImageDialog}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <UploadImages 
+                  closeDialog={closeImageDialog} 
+                  GroupID={MessageGroupId} 
+                  onImageUpload={uploadImg} />  
+            <CloseButton onClick={closeImageDialog}>&times;</CloseButton>
+          </ModalContent>
+        </Modal>
+      )}
       <div className="chat-messages">
         {messages.map((message) => (
           <MessageBubble ref={scrollRef} key={uuidv4()} fromSelf={message.fromSelf}>
@@ -75,8 +136,7 @@ export default function ChatContainer() {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100vh; 
-  background-color: #f0f0f0; 
+  background-color: #f0f0f0;
   width: 100%;
 
   .chat-header {
@@ -96,12 +156,29 @@ const Container = styled.div`
       .avatar img {
         height: 50px;
         width: 50px;
-        border-radius: 50%; 
-        border: 2px solid #ffffff; 
+        border-radius: 50%;
+        border: 2px solid #ffffff;
       }
 
-      .username h3 {
-        margin: 0; 
+      .nameChat h3 {
+        margin: 0;
+      }
+
+      .editName .editButton {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .editName .editButton p {
+        color: #fff;
+        font-size: 20px;
+        padding-bottom: 5px;
+      }
+
+      .editName .editButton:hover p {
+        color: #666;
       }
     }
   }
@@ -113,49 +190,78 @@ const Container = styled.div`
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow-y: auto; 
+    overflow-y: auto;
 
-  .message {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: #ffffff;
-  width: fit-content;
-}
+    .message {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 1rem;
+      border-radius: 8px;
+      background-color: #ffffff;
+      width: fit-content;
+    }
 
-.sended {
-  align-self: flex-end;
-  background-color: #00b4d8;
-  color: white;
-}
+    .sended {
+      align-self: flex-end;
+      background-color: #00b4d8;
+      color: white;
+    }
 
-.recieved {
-  align-self: flex-start;
-  background-color: #ffffff;
-}
+    .recieved {
+      align-self: flex-start;
+      background-color: #ffffff;
+    }
 
-.content img {
-  max-width: 100%; 
-  max-height: 200px; 
-  border-radius: 8px; 
-  margin-top: 10px; 
-  object-fit: contain; 
-}
+    .content img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+      margin-top: 10px;
+      object-fit: contain;
+    }
 
+    .message-info {
+      font-size: 0.75rem;
+      color: #666;
+      text-align: right;
+    }
 
-.message-info {
-  font-size: 0.75rem;
-  color: #666;
-  text-align: right;
-}
-
-.message-info span {
-  display: block; 
-}
+    .message-info span {
+      display: block;
+    }
   }
+`;
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 12, 41, 0.6); /* Màu nền với độ mờ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalContent = styled.div`
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #333;
 `;
 
 const MessageBubble = styled.div`
@@ -165,7 +271,7 @@ const MessageBubble = styled.div`
   padding: 1rem;
   border-radius: 8px;
   background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
   width: fit-content;
   max-width: 70%;
@@ -199,21 +305,20 @@ const MessageBubble = styled.div`
       border-radius: 8px;
       margin-top: 10px;
     }
-    
+
     .message-info {
       display: none;
     }
     .message-time {
       position: absolute;
-      right: 10px; 
-      bottom: 10px; 
-      font-size: 0.75rem; 
-      color: #666; 
+      right: 10px;
+      bottom: 10px;
+      font-size: 0.75rem;
+      color: #666;
     }
   }
   .message-time {
-
-    text-align:right;
+    text-align: right;
   }
   .message-info {
     font-size: 0.75rem;

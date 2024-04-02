@@ -2,35 +2,32 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
 import {  getCurrentUserLocal } from "../utils/LocalStorage"
+import axios from 'axios';
 
-export default function Contacts({  changeChat }) {
+export default function Contacts({  changeChat, onSave }) {
   const currentUser = getCurrentUserLocal();
   const [contacts, setContacts] = useState([]);
   const [currentUserImage, setCurrentUserImage] = useState('');
   const [currentSelected, setCurrentSelected] = useState(null);
 
-
-
   useEffect(() => {
     const fetchUserGroups = async () => {
-      try {
-        const response = await fetch(`http://localhost:8080/api/v1/message_group/${currentUser._id}`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+        try {
+            const response = await axios.get(`http://localhost:8080/api/v1/message_group/${currentUser._id}`);
+            if (response.status !== 200) {
+                throw new Error('Network response was not ok');
+            }
+            setContacts(response.data); 
+        } catch (error) {
+            console.error('There was a problem with fetching user groups:', error);
         }
-        const data = await response.json();
-        setContacts(data); 
-      } catch (error) {
-        console.error('There was a problem with fetching user groups:', error);
-      }
     };
-
     fetchUserGroups();
-  }, []); 
-
+}, [onSave]);
+  
   const changeCurrentChat = (index, contact) => {
-    setCurrentSelected(index);
-    changeChat(contact);
+  setCurrentSelected(index);
+  changeChat(contact);
   };
 
   return (
@@ -43,25 +40,25 @@ export default function Contacts({  changeChat }) {
           <div className="contacts">
             {contacts.map((contact, index) => (
               <div
-                key={contact._id}
+                key={contact.MessageGroupId}
                 className={`contact ${index === currentSelected ? "selected" : ""}`}
-                onClick={() => changeCurrentChat(index, contact)}
+                onClick={() => changeCurrentChat(index, contact) }
               >
                 <div className="avatar">
                   {
-                    contact.avatar?
-                    <img src={`data:image/svg+xml;base64,${contact.avatarImage}`} alt="" />:
+                    contact.Message_group_image?
+                    <img src={`http://localhost:8080/${contact.Message_group_image}`} alt="" />:
                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU" alt="Defaut Image" />
                   }
                   
                 </div>
                 <div className="username">
                   <h3>{contact.username}</h3>
-                  <h2>{contact.Message_group_name}</h2>
+                  <h3>{contact.Message_group_name}</h3>
                   {
-                    contact.last_message?
-                    <p>{contact.last_message }</p> :
-                    <p>Chưa có tin nhắn</p>
+                    contact.last_message ?
+                    <p>{contact.last_message.length >= 26 ? contact.last_message.slice(0, 21) + '...' : contact.last_message }</p> :
+                    <p>Chưa có tin nhắn cuối</p>
                   }
                   {contact.is_read ? <span>✅</span> : <span>❌</span>}
                 </div>
@@ -88,7 +85,6 @@ export default function Contacts({  changeChat }) {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100vh;
   background-color: #0F0C29; /* Deep blue background */
   
   .brand {
@@ -142,10 +138,11 @@ const Container = styled.div`
       }
       .username {
         margin-left: 15px;
-        padding-bottom: 15px;
+        padding: 15px 0;
+        
         h3, p {
           color: #CCC;
-          margin: 0 10px 0 0;
+          margin: 0px 10px 0 0;
           display: inline-block;
         }
         span {
@@ -198,90 +195,3 @@ const Container = styled.div`
     }
   }
 `;
-// const Container = styled.div`
-//   display: grid;
-//   grid-template-rows: 10% 75% 15%;
-//   overflow: hidden;
-//   background-color: #080420;
-//   .brand {
-//     display: flex;
-//     align-items: center;
-//     gap: 1rem;
-//     justify-content: center;
-//     img {
-//       height: 2rem;
-//     }
-//     h3 {
-//       color: white;
-//       text-transform: uppercase;
-//     }
-//   }
-//   .contacts {
-//     display: flex;
-//     flex-direction: column;
-//     align-items: center;
-//     overflow: auto;
-//     gap: 0.8rem;
-//     &::-webkit-scrollbar {
-//       width: 0.2rem;
-//       &-thumb {
-//         background-color: #ffffff39;
-//         width: 0.1rem;
-//         border-radius: 1rem;
-//       }
-//     }
-//     .contact {
-//       background-color: #ffffff34;
-//       min-height: 5rem;
-//       cursor: pointer;
-//       width: 90%;
-//       border-radius: 0.2rem;
-//       padding: 0.4rem;
-//       display: flex;
-//       gap: 1rem;
-//       align-items: center;
-//       transition: 0.5s ease-in-out;
-//       .avatar {
-//         img {
-//           height: 3rem;
-//         }
-//       }
-//       .username {
-//         h3 {
-//           color: white;
-//         }
-        
-//       }
-//     }
-//     .selected {
-//       background-color: #9a86f3;
-//     }
-//   }
-
-//   .current-user {
-//     background-color: #0d0d30;
-//     display: flex;
-//     justify-content: center;
-//     align-items: center;
-//     gap: 2rem;
-//     .avatar {
-//       img {
-//         height: 4rem;
-//         max-inline-size: 100%;
-//       }
-//     }
-//     .username {
-//       h2 {
-//         color: white;
-//       }
-//     }
-//     @media screen and (min-width: 720px) and (max-width: 1080px) {
-//       gap: 0.5rem;
-//       .username {
-//         h2 {
-//           font-size: 1rem;
-//         }
-//       }
-//     }
-//   }
-// `;
