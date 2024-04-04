@@ -1,5 +1,7 @@
 package com.example.ChatApp.Controller;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableLoadTimeWeaving;
@@ -7,6 +9,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.objenesis.instantiator.basic.NewInstanceInstantiator;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -23,6 +29,7 @@ import com.example.ChatApp.Models.Messages;
 import com.example.ChatApp.Repositories.MessageRepository;
 import com.example.ChatApp.Services.MessageService;
 import com.example.ChatApp.dto.GroupIdRequest;
+import com.example.ChatApp.dto.MessageSocketDto.MessageTextDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,21 +41,22 @@ import jakarta.websocket.server.PathParam;
 public class MessagesController {
 	@Autowired
 	private MessageService messageService;
-	
-
 	@Autowired
-	protected MessageRepository messageRepository;
+	private SimpMessagingTemplate simpMessagingTemplate;
+    private Map<String, List<String>> groupMembers = new HashMap<>(); 
+
 	
-	@PostMapping
-	public ResponseEntity<Messages> create(@RequestBody Messages messages){
-		try {
-			messages = messageService.insertOne(messages);
-			return new ResponseEntity<>(messages, HttpStatus.CREATED);
-		} catch (Exception e) {
-			System.out.println(e.getStackTrace());
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-			// TODO: handle exception
-		}
+	@MessageMapping("/sendMessage")
+	public MessageTextDto receivePublicMessage(@Payload MessageTextDto messageTextDto) {
+		System.out.println("Receive public message");
+		List<String> members = groupMembers.get(messageTextDto.Message_group_id);
+        if (members != null) {
+            for (String member : members) {
+                // Send message to each member of the group
+            	simpMessagingTemplate.convertAndSendToUser(member, "/message_group", messageTextDto);
+            }
+        }
+		return messageTextDto;
 	}
 	
 	@GetMapping()
