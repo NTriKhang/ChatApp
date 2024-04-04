@@ -29,7 +29,6 @@ const ChatPage = () => {
   };
   
   const changeCurrentChat = (index, contact) => {
-    setCurrentSelected(index);
     changeChat(contact); 
     setShowWelcome(false);
   };
