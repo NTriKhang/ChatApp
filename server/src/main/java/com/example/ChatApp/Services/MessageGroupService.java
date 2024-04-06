@@ -35,14 +35,13 @@ import io.jsonwebtoken.io.IOException;
 public class MessageGroupService {
 	@Autowired
 	private UsersRepository usersRepository;
-
 	@Autowired
 	private MessageGroupsRepository messageGroupsRepository;
 	@Autowired
 	private MongoTemplate mongoTemplate;
 	public String root = System.getProperty("user.dir")+"\\src\\main\\resources\\static\\";
 
-	public List<UserGroupDto> getListMessGroupByUserID(String userID) throws Exception {
+	public List<UserGroupDto> getListMessGroupByUserID(String userID, Boolean isConnect) throws Exception {
 
 		ObjectId id = new ObjectId(userID);
 		Optional<Users> users = usersRepository.findById(id);
@@ -66,6 +65,18 @@ public class MessageGroupService {
 
 				}
 			});
+		}
+		if(!isConnect && rs.size() > 0) {
+			SocketService.initUserConnectAsync(userID, rs)
+		    .thenRun(() -> {
+		        // Any code to execute after the operation completes
+		        System.out.println("InitUserConnect operation completed asynchronously.");
+		    })
+		    .exceptionally(ex -> {
+		        // Handle any exceptions that occurred during the operation
+		        System.err.println("Error occurred: " + ex.getMessage());
+		        return null; // Return null to allow the chain to continue
+		    });
 		}
 		return rs;
 	}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
-import {  getCurrentUserLocal } from "../utils/LocalStorage"
+import {  getConnectStateLocal, getCurrentUserLocal, setConnectStateLocal } from "../utils/LocalStorage"
 import axios from 'axios';
 
 export default function Contacts({  changeChat, onSave }) {
@@ -13,11 +13,14 @@ export default function Contacts({  changeChat, onSave }) {
   useEffect(() => {
     const fetchUserGroups = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/v1/message_group/${currentUser._id}`);
+            var connectStateString = getConnectStateLocal();
+            var connectStateBoolean = connectStateString === "true";
+            const response = await axios.get(`http://localhost:8080/api/v1/message_group/${currentUser._id}?isConnected=${connectStateBoolean}`);
             if (response.status !== 200) {
                 throw new Error('Network response was not ok');
             }
-            setContacts(response.data); 
+            setContacts(response.data);
+            setConnectStateLocal(true) 
         } catch (error) {
             console.error('There was a problem with fetching user groups:', error);
         }

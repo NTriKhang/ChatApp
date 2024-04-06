@@ -41,10 +41,11 @@ public class MessageGroupController {
 	 */
 
 	@GetMapping("/{userID}")
-	public ResponseEntity<List<UserGroupDto>> getListMessGroupByUserID(@PathVariable("userID") String userID) {
+	public ResponseEntity<List<UserGroupDto>> getListMessGroupByUserID(
+			@PathVariable("userID") String userID,
+			@RequestParam(value = "isConnected", defaultValue = "false") boolean isConnected) {
 		try {
-			System.out.println("in get list");
-			return new ResponseEntity<>(messageGroupService.getListMessGroupByUserID(userID), HttpStatus.OK);
+			return new ResponseEntity<>(messageGroupService.getListMessGroupByUserID(userID, isConnected), HttpStatus.OK);
 		} catch (Exception e) {
 			System.out.println("Exception: " + e.getMessage());
 			return new ResponseEntity<>(new ArrayList<UserGroupDto>(), HttpStatus.BAD_REQUEST);

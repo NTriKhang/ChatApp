@@ -8,7 +8,7 @@ import { getCurrentUserLocal } from "../utils/LocalStorage";
 import UpdateNameMG from "./UpdateNameMG";
 import UploadImages from "./UploadImages";
 
-export default function ChatContainer({ currentChat, onSave }) {
+export default function ChatContainer({ currentChat, onSave, stompClient }) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
   const { MessageGroupId, Message_group_name, Message_group_image } = currentChat;
@@ -217,7 +217,7 @@ export default function ChatContainer({ currentChat, onSave }) {
           </MessageBubble>
         ))}
       </div>
-      <ChatInput />
+      <ChatInput stompClient={stompClient} currentChat={currentChat}/>
     </Container>
   );
 }

@@ -3,6 +3,7 @@ package com.example.ChatApp.Services;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.example.ChatApp.Models.Users;
+import com.example.ChatApp.Models.Submodels.MessageGroup_User;
 import com.example.ChatApp.Repositories.UsersRepository;
 
 import com.example.ChatApp.dto.SignInDto;
@@ -66,6 +68,7 @@ public class UserService {
 		users.Tag = signUpRequest.Tag;
 		users.Background_image_path = "";
 		users.Image_path = "";
+		users.List_message_group = new ArrayList<MessageGroup_User>();
 		return usersRepository.save(users);
 	}
 

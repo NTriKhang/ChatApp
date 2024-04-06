@@ -7,7 +7,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { loginRoute } from "../utils/APIRoutes";
 
-import { setCurrentUserLocal, getCurrentUserLocal } from "../utils/LocalStorage"
+import { setCurrentUserLocal, getCurrentUserLocal, setConnectStateLocal } from "../utils/LocalStorage"
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -55,11 +56,13 @@ export default function Login() {
       }
       if (data?.Display_name) {
         setCurrentUserLocal(data)
+        setConnectStateLocal(false)
         navigate("/");
       }
     }
-  };
 
+  };
+ 
   return (
     <>
       <FormContainer>

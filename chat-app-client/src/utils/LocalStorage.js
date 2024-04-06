@@ -8,3 +8,13 @@ export const setCurrentUserLocal = (data) => {
         JSON.stringify(data)
       );;
 }
+export const getConnectStateLocal = () => {
+    return localStorage.getItem("chat-app-connect-state");
+}
+
+export const setConnectStateLocal = (state) =>  {
+    return localStorage.setItem(
+        "chat-app-connect-state",
+        state
+    );
+}
