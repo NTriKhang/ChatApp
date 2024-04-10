@@ -12,7 +12,7 @@ import { setCurrentUserLocal, getCurrentUserLocal, setConnectStateLocal } from "
 
 export default function Login() {
   const navigate = useNavigate();
-  const [values, setValues] = useState({ Account_name: "", Password: "" });
+  const [values, setValues] = useState({ Account_name: "@Ivy8iE9l", Password: "password123" });
   const toastOptions = {
     position: "bottom-right",
     autoClose: 8000,
