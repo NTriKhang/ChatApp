@@ -90,12 +90,10 @@ public class UserService {
 		
 		System.out.println(millisBetween + " " + daysBetween);
 
-		if (editedDay==null&&daysBetween<=60) {
-			return null;
-		}
-		if (daysBetween1<=60) {
-			return null;
-		}
+		/*
+		 * if (editedDay==null&&daysBetween<=60) { return null; } if (daysBetween1<=60)
+		 * { return null; }
+		 */
 
 		if (usersRepository.findByEmailExceptId(userUpdateRequest.Email, userUpdateRequest.Id).isPresent()) {
 			return null;

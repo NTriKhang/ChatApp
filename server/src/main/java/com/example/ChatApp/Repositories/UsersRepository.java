@@ -14,8 +14,8 @@ import com.example.ChatApp.dto.IdDto;
 public interface UsersRepository extends MongoRepository<Users, ObjectId>{
     //Optional<Users> findById(ObjectId id);
     //Optional<Users> findByTag(String Tag);
-    @Query(value="{ '_id' : ?0 }", fields="{ '_id' : 1 }")
-    Optional<Users> find_ById(String id);
+    @Query(value="{ '_id' : ?0 }")
+    Optional<Users> find_By(String id);
     @Query(value = "{Email: ?0}", fields = "{_id: 1}")
     Optional<Users> findByEmail(String Email);
     @Query(value = "{Email: ?0, _id: {$ne: ?1}}")

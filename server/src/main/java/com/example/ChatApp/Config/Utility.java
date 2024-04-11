@@ -12,4 +12,8 @@ public class Utility {
 		public static String AttachFile = "AttachFile";
 
 	}
+	public static class MsgGroupType{
+		public static String Group = "Group";
+		public static String Individual = "Individual";
+	}
 }

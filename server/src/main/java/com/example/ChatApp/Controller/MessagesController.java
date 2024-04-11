@@ -30,6 +30,7 @@ import com.example.ChatApp.Repositories.MessageRepository;
 import com.example.ChatApp.Services.MessageService;
 import com.example.ChatApp.Services.SocketService;
 import com.example.ChatApp.SocketDto.MessageTextDto;
+import com.example.ChatApp.SocketDto.MessageTextIndDto;
 import com.example.ChatApp.dto.GroupIdRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -57,7 +58,32 @@ public class MessagesController {
 			return messageTextDto;
 		}
 	}
-	
+	@MessageMapping("/sendIndMessage")
+	public MessageTextIndDto sendIndMessage(@Payload MessageTextIndDto messageTextIndDto) {
+		try {
+			List<Messages> messageList;
+			if(messageTextIndDto.MsgSenderId == "" && messageTextIndDto.MsgReceiverId == "") {		
+				messageList = messageService.InitPrivateMessage(messageTextIndDto);		
+			}
+			else if(messageTextIndDto.MsgSenderId != "" && messageTextIndDto.MsgReceiverId != "") {
+				messageList = messageService.insertBothMessage(messageTextIndDto.MsgSenderId, messageTextIndDto.MsgReceiverId, messageTextIndDto.Content);
+			}
+			else {
+				System.err.println("Invalid parameter");
+				socketService.sendErrorToUser(messageTextIndDto.SenderId);
+				return messageTextIndDto;
+			}
+			
+			if(messageList == null)
+				socketService.sendErrorToUser(messageTextIndDto.SenderId);
+			socketService.sendPrivateMessage(messageTextIndDto.SenderId, messageTextIndDto.ReceiverId, messageList.get(0), messageList.get(1));
+			return messageTextIndDto;
+		} catch (Exception e) {
+			// TODO: handle exception
+			socketService.sendErrorToUser(messageTextIndDto.SenderId);
+			return messageTextIndDto;
+		}
+	}
 	@GetMapping()
 	public ResponseEntity<List<Messages>> getAll(){
 

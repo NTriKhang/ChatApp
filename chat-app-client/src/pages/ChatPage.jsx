@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Contacts from "../components/Contacts"; 
+import Contacts from "../components/Contacts";
 import styled from 'styled-components';
 import ChatContainer from "../components/ChatContainer";
 
@@ -16,12 +16,11 @@ const ChatPage = () => {
   const [contacts, setContacts] = useState([]);
   const [updatename, setUpdateName] = useState('');
   ///Khang
-  const [isConenct, setIsConnect] = useState(false)
-
-  const connect =()=>{
+  const [isConnect, setIsConnect] = useState(false)
+  const connect = () => {
     let Sock = new SockJS('http://localhost:8080/ws');
-    stompClient = over(Sock);     
-    stompClient.connect({},onConnected, onError);
+    stompClient = over(Sock);
+    stompClient.connect({}, onConnected, onError);
     // stompClient.disconnect(function(){
     //   console.log("disconnected")
     // })
@@ -31,7 +30,12 @@ const ChatPage = () => {
   const onConnected = () => {
     var userId = getCurrentUserLocal()["_id"];
     console.log("id " + userId)
-    stompClient.subscribe('/user/'+userId+'/message_group', onGroupMessage);
+    stompClient.subscribe('/user/' + userId + '/message_group', onGroupMessage);
+    stompClient.subscribe('/user/' + userId + '/message', onMessage);
+  }
+  const onMessage = (payload) => {
+    var payloadData = JSON.parse(payload.body);
+    console.log("On socket response ", payloadData)
   }
   const onGroupMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
@@ -39,7 +43,7 @@ const ChatPage = () => {
   }
   const onError = (err) => {
     console.log(err);
-    
+
   }
   const onSave = (newName) => {
     setUpdateName(newName);
@@ -52,14 +56,14 @@ const ChatPage = () => {
       }
       return contact;
     });
-    setContacts(updatedContacts); 
+    setContacts(updatedContacts);
   };
   const changeChat = (newChat) => {
     setCurrentChat(newChat);
   };
-  
+
   const changeCurrentChat = (index, contact) => {
-    changeChat(contact); 
+    changeChat(contact);
     setShowWelcome(false);
   };
   const updateGroupName = (newGroupName) => {
@@ -68,9 +72,9 @@ const ChatPage = () => {
       Message_group_name: newGroupName
     }));
   };
-  
+
   useEffect(() => {
-    if (isConenct === false) {
+    if (isConnect === false) {
       connect();
     }
   }, []);
@@ -78,25 +82,24 @@ const ChatPage = () => {
   return (
     <PageContainer>
       <div className='container'>
-      <Contacts 
-            changeChat={changeChat} 
-            changeCurrentChat={changeCurrentChat} 
-            onSave={updatename}/>
+        <Contacts
+          changeChat={changeChat}
+          changeCurrentChat={changeCurrentChat}
+          onSave={updatename}
+          stompClient={stompClient} />
 
-
-
-        {currentChat ? ( 
-          <ChatContainer 
-          currentChat={currentChat} 
-          onSave={onSave}
-          stompClient={stompClient}/>
+        {currentChat ? (
+          <ChatContainer
+            currentChat={currentChat}
+            onSave={onSave}
+            stompClient={stompClient} />
         ) : (
-          <Welcome /> 
+          <Welcome />
         )}
       </div>
     </PageContainer>
   );
-};
+}
 
 export default ChatPage;
 const PageContainer = styled.div`

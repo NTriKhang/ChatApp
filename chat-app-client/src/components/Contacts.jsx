@@ -4,7 +4,7 @@ import Logo from "../assets/logo.svg";
 import {  getConnectStateLocal, getCurrentUserLocal, setConnectStateLocal } from "../utils/LocalStorage"
 import axios from 'axios';
 
-export default function Contacts({  changeChat, onSave }) {
+export default function Contacts({  changeChat, onSave, stompClient }) {
   const currentUser = getCurrentUserLocal();
   const [contacts, setContacts] = useState([]);
   const [currentUserImage, setCurrentUserImage] = useState('');
@@ -32,10 +32,10 @@ export default function Contacts({  changeChat, onSave }) {
   setCurrentSelected(index);
   changeChat(contact);
   };
-
   return (
     <>
         <Container>
+
           <div className="brand bg">
             <img src={Logo} alt="logo" />
             <h3>App chat</h3>

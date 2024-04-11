@@ -144,7 +144,7 @@ export default function ChatContainer({ currentChat, onSave, stompClient }) {
     };
     fetchData();
   }, []);
-
+  
   return (
     <Container>
       <div className="chat-header">

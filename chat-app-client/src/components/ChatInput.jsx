@@ -39,6 +39,14 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
       //console.log(messageTextDto)
       setMsg("");
     }
+    else{
+      let messageTextIndDto = {
+        Content: "test private message",
+        SenderId: "65dfd0041e074622e7cd00b8",
+        ReceiverId: "65dfd0041e074622e7cd00c0"
+      }
+      stompClient.send("/app/sendIndMessage", {}, JSON.stringify(messageTextIndDto))
+    }
   };
 
   return (
