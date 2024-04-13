@@ -15,14 +15,18 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.config.WebSocketMessageBrokerStats;
 
+import com.example.ChatApp.Config.Utility;
 import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Models.Messages;
 import com.example.ChatApp.Models.Users;
+import com.example.ChatApp.Models.Submodels.MessageGroup_User;
+import com.example.ChatApp.Models.Submodels.SenderUser_Msg;
 import com.example.ChatApp.Repositories.MessageGroupsRepository;
 import com.example.ChatApp.Repositories.MessageRepository;
 import com.example.ChatApp.Repositories.UsersRepository;
 import com.example.ChatApp.SocketDto.MessageTextDto;
 import com.example.ChatApp.SocketDto.MessageTextIndDto;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 @Service
 public class MessageService {
@@ -54,13 +58,20 @@ public class MessageService {
 		
 		if(!senderUser.isPresent() || !receiveUser.isPresent())
 			return  null;
-		Message_groups senderGroups = new Message_groups(senderUser.get().Display_name, senderUser.get().Background_image_path, null);
-		Message_groups receiveGroups = new Message_groups(receiveUser.get().Display_name, receiveUser.get().Background_image_path, null);
+		Message_groups senderGroups = new Message_groups(receiveUser.get().Display_name, receiveUser.get().Background_image_path, null, Utility.MsgGroupType.Individual);
+		Message_groups receiveGroups = new Message_groups(senderUser.get().Display_name, senderUser.get().Background_image_path, null, Utility.MsgGroupType.Individual);
 		try {
 			senderGroups = messageGroupsRepository.save(senderGroups);
+			addGroupIdToListGroupOfUser(senderGroups._id, senderUser.get()._id, true);
+		
 			receiveGroups = messageGroupsRepository.save(receiveGroups);
-			return insertBothMessage(senderGroups._id, receiveGroups._id, messageTextIndDto.Content);
+			addGroupIdToListGroupOfUser(receiveGroups._id, receiveUser.get()._id, false);
 			
+			updateConnectedMsgGroup(senderGroups._id, receiveGroups._id);
+			updateConnectedMsgGroup(receiveGroups._id, senderGroups._id);
+			
+			System.out.println("return");
+			return insertBothMessage(new SenderUser_Msg(senderUser.get()._id, senderUser.get().Display_name) ,senderGroups._id, receiveGroups._id, messageTextIndDto.Content);	
 		} catch (Exception e) {
 			System.out.println(e.getMessage()); 
 			System.err.println(e.getStackTrace());
@@ -68,20 +79,34 @@ public class MessageService {
 		}
 		
 	}
-	public List<Messages> insertBothMessage(String senderGroupId, String receiverGroupId, String Content) {
+	private void updateConnectedMsgGroup(String groupdId1, String groupdId2) {
+		
+		ObjectId id = new ObjectId(groupdId1);
+		Query query = Query.query(Criteria.where("_id").is(id));
+		Update update = new Update().set("MsgConnectedId", new ObjectId(groupdId2));
+		mongoTemplate.updateFirst(query, update, Message_groups.class);
+	}
+	private void addGroupIdToListGroupOfUser(String groupId, String userId, Boolean isSender) {
+		ObjectId id = new ObjectId(userId);
+		Query query = Query.query(Criteria.where("_id").is(id));
+		MessageGroup_User messageGroup_User = new MessageGroup_User(groupId, isSender, Utility.Role.Participant);
+		Update update = new Update().push("List_message_group", messageGroup_User);
+		mongoTemplate.updateFirst(query, update, Users.class);
+	}
+	public List<Messages> insertBothMessage(SenderUser_Msg sender, String senderGroupId, String receiverGroupId, String Content) {
 		List<Messages> messageList = new ArrayList<Messages>();
-		Messages messageSender = insertPrivateMessage(senderGroupId, Content);
+		Messages messageSender = insertPrivateMessage(senderGroupId, Content, sender);
 		if(messageSender == null)
 			return null;
-		Messages messageReceiver = insertPrivateMessage(receiverGroupId, Content);
+		Messages messageReceiver = insertPrivateMessage(receiverGroupId, Content, sender);
 		if(messageReceiver == null)
 			return null;
 		messageList.add(messageSender);
 		messageList.add(messageReceiver);
 		return messageList;
 	}
-	private Messages insertPrivateMessage(String groupId, String content) {
-		Messages messages = new Messages(content, groupId);
+	private Messages insertPrivateMessage(String groupId, String content, SenderUser_Msg sender) {
+		Messages messages = new Messages(content, groupId, sender);
 		try {
 			messages = messageRepository.save(messages);
 			return messages;

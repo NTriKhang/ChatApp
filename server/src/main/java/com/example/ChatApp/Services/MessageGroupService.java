@@ -61,7 +61,7 @@ public class MessageGroupService {
 					Message_groups msGroups = messageGroup.get();
 					rs.add(new UserGroupDto(msGroups._id, msGroups.Message_group_name,
 							Utility.FilePath.GroupImagePath + msGroups.Message_group_image,
-							msGroups.Last_message, user_messGroup.isRead, user_messGroup.role));
+							msGroups.Last_message, user_messGroup.isRead, user_messGroup.role, msGroups.MsgGroupType));
 
 				}
 			});

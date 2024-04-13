@@ -16,4 +16,9 @@ public class Utility {
 		public static String Group = "Group";
 		public static String Individual = "Individual";
 	}
+	public static class Role{
+		public static String Participant = "Participant";
+		public static String Admin = "Admin";
+
+	}
 }

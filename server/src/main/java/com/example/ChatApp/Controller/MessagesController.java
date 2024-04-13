@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.ChatApp.Models.Messages;
+import com.example.ChatApp.Models.Submodels.SenderUser_Msg;
 import com.example.ChatApp.Repositories.MessageRepository;
 import com.example.ChatApp.Services.MessageService;
 import com.example.ChatApp.Services.SocketService;
@@ -66,7 +67,7 @@ public class MessagesController {
 				messageList = messageService.InitPrivateMessage(messageTextIndDto);		
 			}
 			else if(messageTextIndDto.MsgSenderId != "" && messageTextIndDto.MsgReceiverId != "") {
-				messageList = messageService.insertBothMessage(messageTextIndDto.MsgSenderId, messageTextIndDto.MsgReceiverId, messageTextIndDto.Content);
+				messageList = messageService.insertBothMessage(new SenderUser_Msg(messageTextIndDto.SenderId, messageTextIndDto.SenderName) , messageTextIndDto.MsgSenderId, messageTextIndDto.MsgReceiverId, messageTextIndDto.Content);
 			}
 			else {
 				System.err.println("Invalid parameter");
@@ -80,6 +81,9 @@ public class MessagesController {
 			return messageTextIndDto;
 		} catch (Exception e) {
 			// TODO: handle exception
+			System.err.println(e.getMessage());
+
+			e.getStackTrace();
 			socketService.sendErrorToUser(messageTextIndDto.SenderId);
 			return messageTextIndDto;
 		}

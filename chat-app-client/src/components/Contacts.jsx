@@ -19,6 +19,7 @@ export default function Contacts({  changeChat, onSave, stompClient }) {
             if (response.status !== 200) {
                 throw new Error('Network response was not ok');
             }
+            console.log(response.data)
             setContacts(response.data);
             setConnectStateLocal(true) 
         } catch (error) {

@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.repository.Update;
 import org.springframework.stereotype.Repository;
 
 import com.example.ChatApp.Models.Users;
@@ -24,4 +25,5 @@ public interface UsersRepository extends MongoRepository<Users, ObjectId>{
     Optional<Users> authLogin(String account_name, String password);
     @Query(value = "{Tag: ?0}", fields = "{_id: 1}")
     Optional<IdDto> findTag(String Tag);
+    
 }

@@ -42,8 +42,9 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
     else{
       let messageTextIndDto = {
         Content: "test private message",
-        SenderId: "65dfd0041e074622e7cd00b8",
-        ReceiverId: "65dfd0041e074622e7cd00c0"
+        SenderName: "ivy quoc123",
+        SenderId: "65dfd0041e074622e7cd00b7",
+        ReceiverId: "65dfd0041e074622e7cd00b8"
       }
       stompClient.send("/app/sendIndMessage", {}, JSON.stringify(messageTextIndDto))
     }
@@ -184,3 +185,5 @@ const Container = styled.div`
     }
   }
 `;
+
+

@@ -25,22 +25,22 @@ public class Message_groups {
 	 * Message_group_name = message_group_name; Message_group_image =
 	 * message_group_image; Last_message = last_message; }
 	 */
-	public Message_groups(String message_group_name, String message_group_image, LastMessage_MsgGroup last_message ) {
+	public Message_groups(String message_group_name, String message_group_image, LastMessage_MsgGroup last_message, String groupType ) {
 		super();
 		Message_group_name = message_group_name;
 		Message_group_image = message_group_image;
 		Last_message = last_message;
-		MsgGroupType = Utility.MsgGroupType.Group;
+		MsgGroupType = groupType;
 		MsgConnectedId = null;
 	}
 
-	public Message_groups(String message_group_name, String message_group_image, LastMessage_MsgGroup last_message,
+	public Message_groups(String message_group_name, String message_group_image, LastMessage_MsgGroup last_message, String groupType,
 			String msgConnectedId ) {
 		super();
 		Message_group_name = message_group_name;
 		Message_group_image = message_group_image;
 		Last_message = last_message;
-		MsgGroupType = Utility.MsgGroupType.Individual;
+		MsgGroupType = groupType;
 		MsgConnectedId = msgConnectedId;
 	}
 
