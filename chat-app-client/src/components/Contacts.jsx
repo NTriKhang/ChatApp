@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
 import {  getCurrentUserLocal } from "../utils/LocalStorage"
+import SearchBar from "./SearchBar"; 
 import axios from 'axios';
 
 export default function Contacts({  changeChat, onSave }) {
@@ -30,6 +31,11 @@ export default function Contacts({  changeChat, onSave }) {
   changeChat(contact);
   };
 
+  const handleSearch = (searchTerm) => {
+    // Handle search logic here
+    console.log("Search term:", searchTerm);
+  };
+  
   return (
     <>
         <Container>
@@ -37,6 +43,7 @@ export default function Contacts({  changeChat, onSave }) {
             <img src={Logo} alt="logo" />
             <h3>App chat</h3>
           </div>
+          <SearchBar onSearch={handleSearch} /> {/* Insert the SearchBar component here */}
           <div className="contacts">
             {contacts.map((contact, index) => (
               <div
