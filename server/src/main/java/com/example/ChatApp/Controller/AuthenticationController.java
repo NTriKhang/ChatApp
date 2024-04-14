@@ -6,6 +6,7 @@ import com.example.ChatApp.Services.AuthenticationService;
 import com.example.ChatApp.Services.JWTService;
 import com.example.ChatApp.Services.UserService;
 import com.example.ChatApp.dto.IdDto;
+import com.example.ChatApp.dto.ImageStringDto;
 import com.example.ChatApp.dto.SignInDto;
 import com.example.ChatApp.dto.SignUpDto;
 /*import lombok.RequiredArgsConstructor;*/
@@ -75,18 +76,18 @@ public class AuthenticationController {
 		}
 	}
 	@PostMapping("/Upload_Image_path/{UserID}")
-	public ResponseEntity<?> uploadUserProfileImage(@PathVariable String UserID, @RequestBody String imageUrl)
+	public ResponseEntity<?> uploadUserProfileImage(@PathVariable String UserID, @RequestBody ImageStringDto imageUrl)
 			throws IOException {
-		UpdateResult res = userService.uploadUserProfileImage(UserID, imageUrl);
+		UpdateResult res = userService.uploadUserProfileImage(UserID, imageUrl.imageUrl);
 		if (res.wasAcknowledged())
 			return new ResponseEntity<>(HttpStatus.OK);
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
 	@PostMapping("/Upload_Background_Image_path/{UserID}")
-	public ResponseEntity<?> uploadUserBackgroundImage(@PathVariable String UserID, @RequestBody String imageUrl)
+	public ResponseEntity<?> uploadUserBackgroundImage(@PathVariable String UserID, @RequestBody ImageStringDto imageUrl)
 			throws IOException {
-		UpdateResult res = userService.uploadUserBackgroundImage(UserID, imageUrl);
+		UpdateResult res = userService.uploadUserBackgroundImage(UserID, imageUrl.imageUrl);
 		if (res.wasAcknowledged())
 			return new ResponseEntity<>(HttpStatus.OK);
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
