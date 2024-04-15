@@ -6,6 +6,7 @@ import com.example.ChatApp.Services.AuthenticationService;
 import com.example.ChatApp.Services.JWTService;
 import com.example.ChatApp.Services.UserService;
 import com.example.ChatApp.dto.IdDto;
+import com.example.ChatApp.dto.ImageStringDto;
 import com.example.ChatApp.dto.SignInDto;
 import com.example.ChatApp.dto.SignUpDto;
 /*import lombok.RequiredArgsConstructor;*/
@@ -61,10 +62,6 @@ public class AuthenticationController {
 		HttpHeaders headers = new HttpHeaders();
 		
 		Users resUser = user.get();
-		if(!resUser.Image_path.isEmpty())
-			resUser.Image_path = Utility.FilePath.UserImagePath + resUser.Image_path;
-		if(!resUser.Background_image_path.isEmpty())
-			resUser.Background_image_path = Utility.FilePath.UserImagePath + resUser.Background_image_path;
 		
 		headers.add(HttpHeaders.SET_COOKIE, "userId=" + resUser._id + "; HttpOnly; Path=/");
 		return ResponseEntity.ok().headers(headers).body(resUser);
@@ -79,20 +76,20 @@ public class AuthenticationController {
 		}
 	}
 	@PostMapping("/Upload_Image_path/{UserID}")
-	public ResponseEntity<?> uploadUserProfileImage(@PathVariable String UserID, @RequestParam MultipartFile file)
+	public ResponseEntity<?> uploadUserProfileImage(@PathVariable String UserID, @RequestBody ImageStringDto imageUrl)
 			throws IOException {
-		String uploadImage = userService.uploadUserProfileImage(UserID, file);
-		if (uploadImage != null)
-			return new ResponseEntity<>(uploadImage, HttpStatus.OK);
+		UpdateResult res = userService.uploadUserProfileImage(UserID, imageUrl.imageUrl);
+		if (res.wasAcknowledged())
+			return new ResponseEntity<>(HttpStatus.OK);
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
 	@PostMapping("/Upload_Background_Image_path/{UserID}")
-	public ResponseEntity<?> uploadUserBackgroundImage(@PathVariable String UserID, @RequestParam MultipartFile file)
+	public ResponseEntity<?> uploadUserBackgroundImage(@PathVariable String UserID, @RequestBody ImageStringDto imageUrl)
 			throws IOException {
-		String uploadImage = userService.uploadUserBackgroundImage(UserID, file);
-		if (uploadImage != null)
-			return new ResponseEntity<>(uploadImage, HttpStatus.OK);
+		UpdateResult res = userService.uploadUserBackgroundImage(UserID, imageUrl.imageUrl);
+		if (res.wasAcknowledged())
+			return new ResponseEntity<>(HttpStatus.OK);
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
