@@ -199,7 +199,7 @@ export default function Contacts({ changeChat }) {
                   />
                 ) : (
                   <img
-                    src={currentUserImage.Image_path}
+                    src={currentUser.Image_path}
                     alt="avatar"
                   />
                 )}
@@ -237,6 +237,8 @@ export default function Contacts({ changeChat }) {
                     className="px-4 py-5 sm:px-6"
                     style={{
                       backgroundImage: `url(${currentUser.Background_image_path})`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: 'cover'
                     }}
                   >
                     <Image
