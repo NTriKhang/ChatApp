@@ -9,11 +9,12 @@ import { loginRoute } from "../utils/APIRoutes";
 import { over } from 'stompjs';
 import SockJS from 'sockjs-client';
 
-import { setCurrentUserLocal, getCurrentUserLocal } from "../utils/LocalStorage"
+import { setCurrentUserLocal, getCurrentUserLocal, setConnectStateLocal } from "../utils/LocalStorage"
+
 
 export default function Login() {
   const navigate = useNavigate();
-  const [values, setValues] = useState({ Account_name: "", Password: "" });
+  const [values, setValues] = useState({ Account_name: "@Ivy8iE9l", Password: "password123" });
   const toastOptions = {
     position: "bottom-right",
     autoClose: 8000,
@@ -64,49 +65,24 @@ export default function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // if (validateForm()) {
-    //   const { Account_name, Password } = values;
-    //   const { data } = await axios.post(loginRoute, {
-    //     Account_name,
-    //     Password,
-    //   });
-    //   if (data.status === 500) {
-    //     toast.error(data.error, toastOptions);
-    //   }
-    //   if (data?.Display_name) {
-    //     setCurrentUserLocal(data)
-    //     navigate("/");
-    //   }
-    // }
-    connect();
+    if (validateForm()) {
+      const { Account_name, Password } = values;
+      const { data } = await axios.post(loginRoute, {
+        Account_name,
+        Password,
+      });
+      if (data.status === 500) {
+        toast.error(data.error, toastOptions);
+      }
+      if (data?.Display_name) {
+        setCurrentUserLocal(data)
+        setConnectStateLocal(false)
+        navigate("/");
+      }
+    }
+
   };
-
-  let stompClient = null
-
-  const connect = () =>{
-    let Sock = new SockJS('http://localhost:8080/ws');
-    stompClient = over(Sock);     
-    stompClient.connect({},onConnected, onError);
-    console.log(stompClient)
-
-  }
-  const onConnected = () => {
-    console.log("connect log")
-
-    // setUserData({...userData,"connected": true});
-    // console.log("on connect",userData)
-    // stompClient.subscribe('/chatroom/public', onMessageReceived);
-    // stompClient.subscribe('/user/'+userData.username+'/private', onPrivateMessage);
-    // stompClient.subscribe('/user/'+userData.username+'/private_call', onPrivateCall); //send iceCandidate
-    // stompClient.subscribe('/user/'+userData.username+'/offer_private_call', onOfferPrivateCall); //send offer
-    // stompClient.subscribe('/user/'+userData.username+'/answer_private_call', onAnswerPrivateCall); //send answer
-    // userJoin();
-  }
-  const onError = (err) => {
-    console.log(err);
-    
-  }
-
+ 
   return (
     <>
       <FormContainer>

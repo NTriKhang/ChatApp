@@ -4,13 +4,46 @@ import styled from 'styled-components';
 import ChatContainer from "../components/ChatContainer";
 
 import Welcome from "../components/Welcome";
+///Khang
+import { over } from 'stompjs';
+import SockJS from 'sockjs-client';
+import { getCurrentUserLocal, setConnectState, setConnectStateLocal } from '../utils/LocalStorage';
+
+var stompClient = null;
 
 const ChatPage = () => {
   const [currentChat, setCurrentChat] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
   const [contacts, setContacts] = useState([]);
   const [updatename, setUpdateName] = useState('');
+  const [message, setMessage] = useState({})
+  ///Khang
+  const [isConenct, setIsConnect] = useState(false)
 
+  const connect =()=>{
+    let Sock = new SockJS('http://localhost:8080/ws');
+    stompClient = over(Sock);     
+    stompClient.connect({},onConnected, onError);
+    // stompClient.disconnect(function(){
+    //   console.log("disconnected")
+    // })
+    console.log(stompClient)
+
+  }
+  const onConnected = () => {
+    var userId = getCurrentUserLocal()["_id"];
+    console.log("id " + userId)
+    stompClient.subscribe('/user/'+userId+'/message_group', onGroupMessage);
+  }
+  const onGroupMessage = (payload) => {
+    var payloadData = JSON.parse(payload.body);
+    console.log("On socket response ", payloadData)
+    setMessage(payloadData)
+  }
+  const onError = (err) => {
+    console.log(err);
+    
+  }
   const onSave = (newName) => {
     setUpdateName(newName);
   }
@@ -38,6 +71,13 @@ const ChatPage = () => {
       Message_group_name: newGroupName
     }));
   };
+  
+  useEffect(() => {
+    if (isConenct === false) {
+      connect();
+    }
+  }, []);
+
   return (
     <PageContainer>
       <div className='container'>
@@ -51,7 +91,9 @@ const ChatPage = () => {
         {currentChat ? ( 
           <ChatContainer 
           currentChat={currentChat} 
-          onSave={onSave}/>
+          onSave={onSave}
+          stompClient={stompClient}
+          messagePayload={message}/>
         ) : (
           <Welcome /> 
         )}

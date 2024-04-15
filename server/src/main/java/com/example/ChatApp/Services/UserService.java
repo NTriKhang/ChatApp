@@ -3,6 +3,7 @@ package com.example.ChatApp.Services;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.example.ChatApp.Models.Users;
+import com.example.ChatApp.Models.Submodels.MessageGroup_User;
 import com.example.ChatApp.Repositories.UsersRepository;
 
 import com.example.ChatApp.dto.SignInDto;
@@ -66,6 +68,7 @@ public class UserService {
 		users.Tag = signUpRequest.Tag;
 		users.Background_image_path = "";
 		users.Image_path = "";
+		users.List_message_group = new ArrayList<MessageGroup_User>();
 		return usersRepository.save(users);
 	}
 
@@ -83,16 +86,14 @@ public class UserService {
 		long millisBetween = new Date().getTime() - editedDay.getTime();
 		long daysBetween = millisBetween / (24 * 60 * 60 * 1000);
 		long millisBetween1 = new Date().getTime() - createDay.getTime();
-		long daysBetween1 = millisBetween / (24 * 60 * 60 * 1000);
+		long daysBetween1 = millisBetween1 / (24 * 60 * 60 * 1000);
 		
 		System.out.println(millisBetween + " " + daysBetween);
 
-		if (editedDay==null&&daysBetween<=60) {
-			return null;
-		}
-		if (daysBetween1<=60) {
-			return null;
-		}
+		/*
+		 * if (editedDay==null&&daysBetween<=60) { return null; } if (daysBetween1<=60)
+		 * { return null; }
+		 */
 
 		if (usersRepository.findByEmailExceptId(userUpdateRequest.Email, userUpdateRequest.Id).isPresent()) {
 			return null;
@@ -129,7 +130,20 @@ public class UserService {
 			return null;
 		}
 	}
+	public UpdateResult uploadUserProfileImage(String userId, String imageUrl) throws IOException {
+		ObjectId id = new ObjectId(userId);
+		Optional<Users> user = usersRepository.findById(id);
 
+		if (!user.isPresent()) {
+			return null;
+		}
+
+		Query query = new Query(Criteria.where("_id").is(id));
+		Update update = new Update().set("Image_path", imageUrl);
+		UpdateResult result = mongoTemplate.updateFirst(query, update, Users.class);
+
+		return result;
+	}
 	public String uploadUserBackgroundImage(String userId, MultipartFile file) throws IOException {
 		ObjectId id = new ObjectId(userId);
 		String folderPath = upLoadDirectory + Utility.FilePath.UserImagePath;
@@ -151,5 +165,19 @@ public class UserService {
 		} else {
 			return null;
 		}
+	}
+	public UpdateResult uploadUserBackgroundImage(String userId, String imageUrl) throws IOException {
+		ObjectId id = new ObjectId(userId);
+		Optional<Users> user = usersRepository.findById(id);
+
+		if (!user.isPresent()) {
+			return null;
+		}
+
+		Query query = new Query(Criteria.where("_id").is(id));
+		Update update = new Update().set("Background_image_path", imageUrl);
+		UpdateResult result = mongoTemplate.updateFirst(query, update, Users.class);
+
+		return result;
 	}
 }

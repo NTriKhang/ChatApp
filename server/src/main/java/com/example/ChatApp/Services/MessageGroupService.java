@@ -35,14 +35,13 @@ import io.jsonwebtoken.io.IOException;
 public class MessageGroupService {
 	@Autowired
 	private UsersRepository usersRepository;
-
 	@Autowired
 	private MessageGroupsRepository messageGroupsRepository;
 	@Autowired
 	private MongoTemplate mongoTemplate;
 	public String root = System.getProperty("user.dir")+"\\src\\main\\resources\\static\\";
 
-	public List<UserGroupDto> getListMessGroupByUserID(String userID) throws Exception {
+	public List<UserGroupDto> getListMessGroupByUserID(String userID, Boolean isConnect) throws Exception {
 
 		ObjectId id = new ObjectId(userID);
 		Optional<Users> users = usersRepository.findById(id);
@@ -67,6 +66,18 @@ public class MessageGroupService {
 				}
 			});
 		}
+		if(!isConnect && rs.size() > 0) {
+			SocketService.initUserConnectAsync(userID, rs)
+		    .thenRun(() -> {
+		        // Any code to execute after the operation completes
+		        System.out.println("InitUserConnect operation completed asynchronously.");
+		    })
+		    .exceptionally(ex -> {
+		        // Handle any exceptions that occurred during the operation
+		        System.err.println("Error occurred: " + ex.getMessage());
+		        return null; // Return null to allow the chain to continue
+		    });
+		}
 		return rs;
 	}
 
@@ -80,45 +91,19 @@ public class MessageGroupService {
 		return result;
 	}
 
-	public String uploadImageMessageGroup(String MessGR_ID, MultipartFile file)
+	public UpdateResult uploadImageMessageGroup(String MessGR_ID, String imageUrl)
 			throws IOException, IllegalStateException, java.io.IOException {
 
 		ObjectId id = new ObjectId(MessGR_ID);
-		// lấy đường dẫn
-		String folderPath = root + Utility.FilePath.GroupImagePath;
-		// cần 1 chuỗi random, nếu không user đăng bức hình sau cùng tên với bức hình cũ sẽ lỗi
-		String fileName = UUID.randomUUID() + file.getOriginalFilename();
-		String filePath = folderPath + fileName;
-
 		Optional<Message_groups> messgrs = messageGroupsRepository.findById(id);
 		if (!messgrs.isPresent())
 			return null;
-		// xóa hình cũ, cập nhật hình cho user thì không cần
-		String oldPath = folderPath + messgrs.get().Message_group_image;
-		
-		// cập nhật thì không xài save
+
 		Query query = new Query(Criteria.where("_id").is(id));
-		Update update = new Update().set("Message_group_image", fileName);
+		Update update = new Update().set("Message_group_image", imageUrl);
 
 		UpdateResult result = mongoTemplate.updateFirst(query, update, Message_groups.class);
-		
-		if (result.wasAcknowledged()) {
-			System.out.println(folderPath);
-						Files.write(Paths.get(filePath), file.getBytes());
-			File fileDeleted = new File(oldPath);
-			if (fileDeleted.exists()) {
-				if (fileDeleted.delete()) {
-					System.out.println("File deleted successfully.");
-				} else {
-					System.out.println("Failed to delete the file.");
-				}
-			} else {
-				System.out.println("File does not exist.");
-			}
-			return Utility.FilePath.GroupImagePath + fileName;
-		}
-
-		return null;
+		return result;
 
 	}
 }

@@ -28,8 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.ChatApp.Models.Messages;
 import com.example.ChatApp.Repositories.MessageRepository;
 import com.example.ChatApp.Services.MessageService;
+import com.example.ChatApp.Services.SocketService;
+import com.example.ChatApp.SocketDto.MessageTextDto;
 import com.example.ChatApp.dto.GroupIdRequest;
-import com.example.ChatApp.dto.MessageSocketDto.MessageTextDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,21 +43,19 @@ public class MessagesController {
 	@Autowired
 	private MessageService messageService;
 	@Autowired
-	private SimpMessagingTemplate simpMessagingTemplate;
-    private Map<String, List<String>> groupMembers = new HashMap<>(); 
-
+	private SocketService socketService;
 	
 	@MessageMapping("/sendMessage")
 	public MessageTextDto receivePublicMessage(@Payload MessageTextDto messageTextDto) {
-		System.out.println("Receive public message");
-		List<String> members = groupMembers.get(messageTextDto.Message_group_id);
-        if (members != null) {
-            for (String member : members) {
-                // Send message to each member of the group
-            	simpMessagingTemplate.convertAndSendToUser(member, "/message_group", messageTextDto);
-            }
-        }
-		return messageTextDto;
+		try {
+			Messages messages = messageService.insertOne(messageTextDto);
+			socketService.sendMessageToGroup(messageTextDto.Message_group_id, messages);
+			return messageTextDto;
+		} catch (Exception e) {
+			// TODO: handle exception
+			socketService.sendErrorToUser(messageTextDto.Sender_user.user_id);
+			return messageTextDto;
+		}
 	}
 	
 	@GetMapping()

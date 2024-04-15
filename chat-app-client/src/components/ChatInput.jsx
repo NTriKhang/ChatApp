@@ -3,8 +3,9 @@ import { BsEmojiSmileFill } from "react-icons/bs";
 import { IoMdSend } from "react-icons/io";
 import styled from "styled-components";
 import Picker from "emoji-picker-react";
+import { getCurrentUserLocal } from "../utils/LocalStorage";
 
-export default function ChatInput({ handleSendMsg }) {
+export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
   const [msg, setMsg] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const handleEmojiPickerhideShow = () => {
@@ -19,8 +20,23 @@ export default function ChatInput({ handleSendMsg }) {
 
   const sendChat = (event) => {
     event.preventDefault();
+    
+    // console.log(stompClient)
+    // console.log(currentChat.MessageGroupId)
+    var currentUser = getCurrentUserLocal();
+    
     if (msg.length > 0) {
-      handleSendMsg(msg);
+      //handleSendMsg(msg);
+      let messageTextDto = {
+        Content : msg,
+        Message_group_id: currentChat.MessageGroupId,
+        Sender_user: {
+          user_id: currentUser._id,
+          user_name: currentUser.Display_name
+        }
+      }
+      stompClient.send("/app/sendMessage", {}, JSON.stringify(messageTextDto))
+      //console.log(messageTextDto)
       setMsg("");
     }
   };
