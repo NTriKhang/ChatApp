@@ -49,7 +49,7 @@ const DialogContainer = styled.div`
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    z-index: 999;
 `;
 
 const DialogTitle = styled.h2`
