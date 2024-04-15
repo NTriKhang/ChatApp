@@ -24,6 +24,7 @@ import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Repositories.MessageGroupsRepository;
 import com.example.ChatApp.Services.MessageGroupService;
 import com.example.ChatApp.Services.MessageService;
+import com.example.ChatApp.dto.ImageStringDto;
 import com.example.ChatApp.dto.MessageGroupUpdateDto;
 import com.example.ChatApp.dto.UserGroupDto;
 import com.mongodb.client.result.UpdateResult;
@@ -66,12 +67,12 @@ public class MessageGroupController {
 
 	// /api/v1/message_groupUpload_Images/
 	@PostMapping("Upload_Images/{GroupID}")
-	public ResponseEntity<?> UploadIMG(@PathVariable String GroupID, @RequestParam MultipartFile file)
+	public ResponseEntity<?> UploadIMG(@PathVariable String GroupID, @RequestBody ImageStringDto imageUrl)
 			throws IOException {
 		System.out.println(GroupID);
-		String uploadImage = messageGroupService.uploadImageMessageGroup(GroupID, file);
-		if (uploadImage != null)
-			return new ResponseEntity<>(uploadImage, HttpStatus.OK);
+		UpdateResult res = messageGroupService.uploadImageMessageGroup(GroupID, imageUrl.imageUrl);
+		if (res.wasAcknowledged())
+			return new ResponseEntity<>(HttpStatus.OK);
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
 	}
