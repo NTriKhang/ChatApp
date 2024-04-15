@@ -8,6 +8,7 @@ import Welcome from "../components/Welcome";
 import { over } from 'stompjs';
 import SockJS from 'sockjs-client';
 import { getCurrentUserLocal, setConnectState, setConnectStateLocal } from '../utils/LocalStorage';
+
 var stompClient = null;
 
 const ChatPage = () => {
@@ -15,6 +16,7 @@ const ChatPage = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   const [contacts, setContacts] = useState([]);
   const [updatename, setUpdateName] = useState('');
+  const [message, setMessage] = useState({})
   ///Khang
   const [isConenct, setIsConnect] = useState(false)
 
@@ -36,6 +38,7 @@ const ChatPage = () => {
   const onGroupMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
     console.log("On socket response ", payloadData)
+    setMessage(payloadData)
   }
   const onError = (err) => {
     console.log(err);
@@ -89,7 +92,8 @@ const ChatPage = () => {
           <ChatContainer 
           currentChat={currentChat} 
           onSave={onSave}
-          stompClient={stompClient}/>
+          stompClient={stompClient}
+          messagePayload={message}/>
         ) : (
           <Welcome /> 
         )}

@@ -8,7 +8,7 @@ import { getCurrentUserLocal } from "../utils/LocalStorage";
 import UpdateNameMG from "./UpdateNameMG";
 import UploadImages from "./UploadImages";
 
-export default function ChatContainer({ currentChat, onSave, stompClient }) {
+export default function ChatContainer({ currentChat, onSave, stompClient, messagePayload }) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
   const [chat, setChat] = useState(currentChat); 
@@ -21,7 +21,7 @@ export default function ChatContainer({ currentChat, onSave, stompClient }) {
   const lastFetchLength = useRef(0);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImageDialog, setShowImageDialog] = useState(false);
-
+  console.log("message payload ", messagePayload)
   const fetchMessages = async (page) => {
     try {
       const response = await axios.get(`http://localhost:8080/api/v1/messages/${MessageGroupId}?page=${page}`, {
@@ -133,10 +133,6 @@ export default function ChatContainer({ currentChat, onSave, stompClient }) {
     }
   }, [initialLoad, isScrolled, reachedEnd]);
 
-  useEffect(() => {
-    fetchMessages();
-  }, []); 
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -149,7 +145,7 @@ export default function ChatContainer({ currentChat, onSave, stompClient }) {
       }
     };
     fetchData();
-  }, []);
+  }, [messagePayload]);
 
   return (
     <Container>
