@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Image, Form, Input, Checkbox, Button, DatePicker } from "antd";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
+
 import {
   getConnectStateLocal,
   getCurrentUserLocal,
@@ -10,6 +11,8 @@ import {
 } from "../utils/LocalStorage";
 import axios from "axios";
 import moment from "moment";
+import SearchBar from "./SearchBar"; 
+
 
 import { useUpdateUser } from "../hooks/useUpdateUser";
 import { useUploadImageUser } from "../hooks/useUploadImageUser";
@@ -133,6 +136,11 @@ export default function Contacts({ changeChat }) {
 
   console.log('currentUserImage.Image_path', currentUserImage.age_path);
 
+  const handleSearch = (searchTerm) => {
+    // Handle search logic here
+    console.log("Search term:", searchTerm);
+  };
+  
   return (
     <>
       <Container>
@@ -140,6 +148,7 @@ export default function Contacts({ changeChat }) {
           <img src={Logo} alt="logo" />
           <h3>App chat</h3>
         </div>
+        <SearchBar onSearch={handleSearch} /> {/* Insert the SearchBar component here */}
         <div className="contacts">
           {contacts.map((contact, index) => (
             <div

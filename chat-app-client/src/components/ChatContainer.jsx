@@ -11,6 +11,7 @@ import UploadImages from "./UploadImages";
 export default function ChatContainer({ currentChat, onSave, stompClient }) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
+  const [chat, setChat] = useState(currentChat); 
   const { MessageGroupId, Message_group_name, Message_group_image } = currentChat;
   const currentPage = useRef(1);
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,6 @@ export default function ChatContainer({ currentChat, onSave, stompClient }) {
   const lastFetchLength = useRef(0);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImageDialog, setShowImageDialog] = useState(false);
-  const [chat, setChat] = useState(currentChat);
 
   const fetchMessages = async (page) => {
     try {
@@ -86,12 +86,18 @@ export default function ChatContainer({ currentChat, onSave, stompClient }) {
 
   // Callback function để cập nhật tên nhóm trong state chat
   const updateGroupName = (newName) => {
-    setChat({ ...chat, Message_group_name: newName });
+    console.log(newName);
+    setChat(({
+      ...chat,
+      Message_group_name: newName
+    }));
     onSave?.(newName);
   };
   const uploadImg = (newImg) => {
-    setChat({ ...chat, 
-      Message_group_image: newImg });
+    setChat(({
+      ...chat,
+      Message_group_image: newImg
+    }));
     onSave?.(newImg);
   };
   const openImageDialog = () => {
@@ -170,9 +176,9 @@ export default function ChatContainer({ currentChat, onSave, stompClient }) {
             </button>
             {showEditDialog && (
               <UpdateNameMG
-                handleClose={handleCloseEditDialog}
-                groupId={MessageGroupId}
-                updateGroupName={updateGroupName} // Truyền hàm callback vào component con
+               handleClose={handleCloseEditDialog}
+               groupId={MessageGroupId}
+               updateGroupName={updateGroupName} // Truyền hàm callback vào component con
               />
             )}
           </div>
@@ -335,6 +341,7 @@ const Modal = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index:999;
 `;
 
 const ModalContent = styled.div`
