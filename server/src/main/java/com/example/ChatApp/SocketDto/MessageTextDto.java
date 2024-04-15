@@ -1,4 +1,4 @@
-package com.example.ChatApp.dto.MessageSocketDto;
+package com.example.ChatApp.SocketDto;
 
 import org.springframework.data.annotation.Id;
 

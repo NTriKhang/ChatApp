@@ -14,6 +14,7 @@ import org.springframework.web.socket.config.WebSocketMessageBrokerStats;
 
 import com.example.ChatApp.Models.Messages;
 import com.example.ChatApp.Repositories.MessageRepository;
+import com.example.ChatApp.SocketDto.MessageTextDto;
 
 @Service
 public class MessageService {
@@ -26,22 +27,22 @@ public class MessageService {
 		this.mongoTemplate = mongoTemplate;
 	}
 	
-	public Messages insertOne(Messages messages) {
-		messages.Created_date = LocalDateTime.now();
+	public Messages insertOne(MessageTextDto messageTextDto) {
+		Messages messages = new Messages(messageTextDto.Content, messageTextDto.Message_group_id, messageTextDto.Sender_user);
 		messages = messageRepository.save(messages);
 		return messages;
 	}
 	public List<Messages> getAll(){
 		System.out.println("Get all messages in services");
 		List<Messages> messages = messageRepository.findAll();
-		System.out.println(messages.size());
+
 		return messages;
 	}
 	public List<Messages> getMessagesByGroupId(String group_id, String userId, int page) {
 		ObjectId objectId = new ObjectId(group_id);
 		int limit = 20;
 		int skip = (page - 1) * limit;
-		System.out.println(limit + " " + skip + " " + userId);
+
 		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, userId, skip, limit);
 		return messages;
 	}
