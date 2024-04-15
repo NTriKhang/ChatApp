@@ -18,6 +18,7 @@ import { useUpdateUser } from "../hooks/useUpdateUser";
 import { useUploadImageUser } from "../hooks/useUploadImageUser";
 import { useUploadBackgroundImageUser } from "../hooks/useUploadBackgroundImageUser";
 import { UploadImage } from "./upload/UploadImage";
+import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
 
 export default function Contacts({ changeChat }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,33 +26,14 @@ export default function Contacts({ changeChat }) {
   const [isModalOpenBackground, setIsModalOpenBackground] = useState(false);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
   const currentUser = getCurrentUserLocal();
-  const [contacts, setContacts] = useState([]);
   const [currentUserImage, setCurrentUserImage] = useState("");
   const [currentSelected, setCurrentSelected] = useState(null);
 
   const { mutateAsync: updateUser } = useUpdateUser();
   const { mutateAsync: uploadImage } = useUploadImageUser();
   const { mutateAsync: uploadBackground } = useUploadBackgroundImageUser();
-  
-  useEffect(() => {
-    const fetchUserGroups = async () => {
-      try {
-        var connectStateString = getConnectStateLocal();
-        var connectStateBoolean = connectStateString === "true";
-        const response = await axios.get(
-          `http://localhost:8080/api/v1/message_group/${currentUser._id}?isConnected=${connectStateBoolean}`
-        );
-        if (response.status !== 200) {
-          throw new Error("Network response was not ok");
-        }
-        setContacts(response.data);
-        setConnectStateLocal(true);
-      } catch (error) {
-        console.error("There was a problem with fetching user groups:", error);
-      }
-    };
-    fetchUserGroups();
-  }, []);
+  const { data: messageGroup, refetch } = useGetMessageGroup(currentUser._id);
+// gọi hàm "refetch" phía trên để call lại api
 
   console.log(currentUser);
 
@@ -134,8 +116,6 @@ export default function Contacts({ changeChat }) {
     }
   };
 
-  console.log('currentUserImage.Image_path', currentUserImage.age_path);
-
   const handleSearch = (searchTerm) => {
     // Handle search logic here
     console.log("Search term:", searchTerm);
@@ -150,7 +130,7 @@ export default function Contacts({ changeChat }) {
         </div>
         <SearchBar onSearch={handleSearch} /> {/* Insert the SearchBar component here */}
         <div className="contacts">
-          {contacts.map((contact, index) => (
+          {messageGroup?.map((contact, index) => (
             <div
               key={contact.MessageGroupId}
               className={`contact ${
@@ -414,6 +394,7 @@ export default function Contacts({ changeChat }) {
     </>
   );
 }
+
 const Container = styled.div`
   display: flex;
   flex-direction: column;

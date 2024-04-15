@@ -66,6 +66,7 @@ public class AuthenticationController {
 		headers.add(HttpHeaders.SET_COOKIE, "userId=" + resUser._id + "; HttpOnly; Path=/");
 		return ResponseEntity.ok().headers(headers).body(resUser);
 	}
+
 	@PutMapping
 	public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateRequest) {
 		try {

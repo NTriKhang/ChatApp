@@ -6,6 +6,8 @@ import Logo from "../assets/logo.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { loginRoute } from "../utils/APIRoutes";
+import { over } from 'stompjs';
+import SockJS from 'sockjs-client';
 
 import { setCurrentUserLocal, getCurrentUserLocal, setConnectStateLocal } from "../utils/LocalStorage"
 
@@ -42,6 +44,24 @@ export default function Login() {
     }
     return true;
   };
+
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   if (validateForm()) {
+  //     const { Account_name, Password } = values;
+  //     const { data } = await axios.post(loginRoute, {
+  //       Account_name,
+  //       Password,
+  //     });
+  //     if (data.status === 500) {
+  //       toast.error(data.error, toastOptions);
+  //     }
+  //     if (data?.Display_name) {
+  //       setCurrentUserLocal(data)
+  //       navigate("/");
+  //     }
+  //   }
+  // };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
