@@ -1,5 +1,9 @@
 export const host = "http://localhost:8080/api/v1";
 export const loginRoute = `${host}/auth/signin`;
+export const updateUserRoute = `${host}/auth`;
+export const updateUserImageRoute = `${host}/auth/Upload_Image_path`;
+export const updateUserBackgroundImageRoute = `${host}/auth/Upload_Background_Image_path`;
+export const updateUserMessageGroupRoute = (id, connectStateString) => `${host}/message_group/${id}?isConnected=${connectStateString}`;
 export const registerRoute = `${host}/auth/signup`;
 export const logoutRoute = `${host}/api/auth/logout`;
 export const allUsersRoute = `${host}/api/auth/allusers`;

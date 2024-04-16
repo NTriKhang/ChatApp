@@ -86,7 +86,7 @@ public class UserService {
 		long millisBetween = new Date().getTime() - editedDay.getTime();
 		long daysBetween = millisBetween / (24 * 60 * 60 * 1000);
 		long millisBetween1 = new Date().getTime() - createDay.getTime();
-		long daysBetween1 = millisBetween / (24 * 60 * 60 * 1000);
+		long daysBetween1 = millisBetween1 / (24 * 60 * 60 * 1000);
 		
 		System.out.println(millisBetween + " " + daysBetween);
 
@@ -130,7 +130,20 @@ public class UserService {
 			return null;
 		}
 	}
+	public UpdateResult uploadUserProfileImage(String userId, String imageUrl) throws IOException {
+		ObjectId id = new ObjectId(userId);
+		Optional<Users> user = usersRepository.findById(id);
 
+		if (!user.isPresent()) {
+			return null;
+		}
+
+		Query query = new Query(Criteria.where("_id").is(id));
+		Update update = new Update().set("Image_path", imageUrl);
+		UpdateResult result = mongoTemplate.updateFirst(query, update, Users.class);
+
+		return result;
+	}
 	public String uploadUserBackgroundImage(String userId, MultipartFile file) throws IOException {
 		ObjectId id = new ObjectId(userId);
 		String folderPath = upLoadDirectory + Utility.FilePath.UserImagePath;
@@ -152,5 +165,19 @@ public class UserService {
 		} else {
 			return null;
 		}
+	}
+	public UpdateResult uploadUserBackgroundImage(String userId, String imageUrl) throws IOException {
+		ObjectId id = new ObjectId(userId);
+		Optional<Users> user = usersRepository.findById(id);
+
+		if (!user.isPresent()) {
+			return null;
+		}
+
+		Query query = new Query(Criteria.where("_id").is(id));
+		Update update = new Update().set("Background_image_path", imageUrl);
+		UpdateResult result = mongoTemplate.updateFirst(query, update, Users.class);
+
+		return result;
 	}
 }
