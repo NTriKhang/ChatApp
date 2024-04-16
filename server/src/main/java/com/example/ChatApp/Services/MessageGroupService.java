@@ -1,3 +1,4 @@
+
 package com.example.ChatApp.Services;
 
 import java.io.File;
@@ -40,7 +41,11 @@ public class MessageGroupService {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 	public String root = System.getProperty("user.dir")+"\\src\\main\\resources\\static\\";
-
+  
+  public Optional<Message_groups> getMsgGroupById(String msgId){
+		return messageGroupsRepository.findById(new ObjectId(msgId));
+	}
+  
 	public List<UserGroupDto> getListMessGroupByUserID(String userID, Boolean isConnect) throws Exception {
 
 		ObjectId id = new ObjectId(userID);
@@ -58,10 +63,19 @@ public class MessageGroupService {
 				Optional<Message_groups> messageGroup = messageGroupsRepository.findById(msgId);
 
 				if (messageGroup.isPresent()) {
+					String receiverId = "";
 					Message_groups msGroups = messageGroup.get();
+					System.out.println(msGroups.MsgGroupType);
+					if(msGroups.MsgGroupType.equals(Utility.MsgGroupType.Individual)) {
+						Optional<Users> receiverUser = usersRepository.findByMsgGroupId(new ObjectId(msGroups.MsgConnectedId));
+						if(!receiverUser.isPresent())
+							return;
+						receiverId = receiverUser.get()._id;
+					}
+					
 					rs.add(new UserGroupDto(msGroups._id, msGroups.Message_group_name,
-							Utility.FilePath.GroupImagePath + msGroups.Message_group_image,
-							msGroups.Last_message, user_messGroup.isRead, user_messGroup.role));
+							msGroups.Message_group_image,
+							msGroups.Last_message, user_messGroup.isRead, user_messGroup.role, msGroups.MsgGroupType, receiverId));
 
 				}
 			});
