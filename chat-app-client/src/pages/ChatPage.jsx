@@ -38,6 +38,7 @@ const ChatPage = () => {
   const onMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
     console.log("On socket response ", payloadData)
+    setMessage(payloadData)
   }
   const onGroupMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
