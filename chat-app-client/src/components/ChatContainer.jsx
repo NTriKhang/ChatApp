@@ -21,7 +21,7 @@ export default function ChatContainer({ currentChat, onSave, stompClient, messag
   const lastFetchLength = useRef(0);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImageDialog, setShowImageDialog] = useState(false);
-  console.log("message payload ", messagePayload)
+  //console.log("message payload ", messagePayload)
   const fetchMessages = async (page) => {
     try {
       const response = await axios.get(`http://localhost:8080/api/v1/messages/${MessageGroupId}?page=${page}`, {
@@ -145,8 +145,7 @@ export default function ChatContainer({ currentChat, onSave, stompClient, messag
       }
     };
     fetchData();
-  }, [messagePayload]);
-
+  }, [messagePayload, currentChat]);
   return (
     <Container>
       <div className="chat-header">
@@ -237,7 +236,7 @@ const Container = styled.div`
     padding: 1rem 2rem;
     background-color: rgb(48, 43, 99);
     color: white;
-    height: 12%;
+    height: 70px;
 
     .user-details {
       display: flex;
@@ -281,9 +280,8 @@ const Container = styled.div`
     display: flex;
     flex-direction: column;
     gap: 10px;
-
     overflow-y: auto; 
-    max-height: calc(100vh - 200px);
+    max-height: 470px;
 
 
     .message {
