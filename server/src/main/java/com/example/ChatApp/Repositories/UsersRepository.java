@@ -25,6 +25,11 @@ public interface UsersRepository extends MongoRepository<Users, ObjectId>{
     Optional<Users> authLogin(String account_name, String password);
     @Query(value = "{Tag: ?0}", fields = "{_id: 1}")
     Optional<IdDto> findTag(String Tag);
+
+    @Query(value="{ '_id' : ?0 }")
+    Optional<Users> findById(String id);
+
     @Query(value="{ 'List_message_group.messageGroupId' : ?0 }")
     Optional<Users> findByMsgGroupId(ObjectId msgId);
+
 }

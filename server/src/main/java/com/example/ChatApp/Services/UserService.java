@@ -180,4 +180,10 @@ public class UserService {
 
 		return result;
 	}
+	
+	public Optional<Users> findUserById(String userId) {
+		return usersRepository.findById(userId)
+				.or(() -> Optional.empty());
+	} 
+
 }
