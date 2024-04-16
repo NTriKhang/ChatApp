@@ -8,11 +8,18 @@ import { getCurrentUserLocal } from "../utils/LocalStorage";
 import UpdateNameMG from "./UpdateNameMG";
 import UploadImages from "./UploadImages";
 
-export default function ChatContainer({ currentChat, onSave, stompClient, messagePayload }) {
+export default function ChatContainer({
+  currentChat,
+  onSave,
+  stompClient,
+  messagePayload,
+  messageGroup,
+}) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
-  const [chat, setChat] = useState(currentChat); 
-  const { MessageGroupId, Message_group_name, Message_group_image } = currentChat;
+  const [chat, setChat] = useState(currentChat);
+  const { MessageGroupId, Message_group_name, Message_group_image } =
+    currentChat;
   const currentPage = useRef(1);
   const [loading, setLoading] = useState(false);
   const [reachedEnd, setReachedEnd] = useState(false);
@@ -21,31 +28,34 @@ export default function ChatContainer({ currentChat, onSave, stompClient, messag
   const lastFetchLength = useRef(0);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImageDialog, setShowImageDialog] = useState(false);
-  console.log("message payload ", messagePayload)
+
   const fetchMessages = async (page) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/v1/messages/${MessageGroupId}?page=${page}`, {
-        withCredentials: true
-      });
+      const response = await axios.get(
+        `http://localhost:8080/api/v1/messages/${MessageGroupId}?page=${page}`,
+        {
+          withCredentials: true,
+        }
+      );
       if (!response.data) {
-        throw new Error('Không thể lấy dữ liệu từ API');
+        throw new Error("Không thể lấy dữ liệu từ API");
       }
       if (response.data == null) {
         return;
       }
       return response.data;
     } catch (error) {
-      console.error('Lỗi:', error);
+      console.error("Lỗi:", error);
       return [];
     }
   };
 
   const fetchMoreMessages = async () => {
     if (loading || reachedEnd) return;
-  
+
     try {
       setLoading(true);
-  
+
       let oldScrollHeight = scrollRef.current.scrollHeight;
       let newMessages = [];
       let nextPage = currentPage.current + 1;
@@ -56,24 +66,25 @@ export default function ChatContainer({ currentChat, onSave, stompClient, messag
         return;
       }
       newMessages = await fetchMessages(nextPage);
-  
+
       if (newMessages.length > 0) {
         setMessages((prevMessages) => [...prevMessages, ...newMessages]);
         lastFetchLength.current = newMessages.length;
-  
+
         if (newMessages.length < 20) {
           setReachedEnd(true);
         }
-  
+
         if (newMessages.length >= 20) {
-          scrollRef.current.scrollTop = scrollRef.current.scrollHeight - oldScrollHeight;
+          scrollRef.current.scrollTop =
+            scrollRef.current.scrollHeight - oldScrollHeight;
         }
       } else {
         if (lastFetchLength.current < 20) {
           setReachedEnd(true);
         }
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.log(`Failed to fetch messages: ${error.message}`);
@@ -84,21 +95,16 @@ export default function ChatContainer({ currentChat, onSave, stompClient, messag
     setShowEditDialog(false);
   };
 
-  // Callback function để cập nhật tên nhóm trong state chat
   const updateGroupName = (newName) => {
-    console.log(newName);
-    setChat(({
-      ...chat,
-      Message_group_name: newName
-    }));
-    onSave?.(newName);
+    onSave();
   };
+
   const uploadImg = (newImg) => {
-    setChat(({
+    setChat({
       ...chat,
-      Message_group_image: newImg
-    }));
-    onSave?.(newImg);
+      Message_group_image: newImg,
+    });
+    onSave?.();
   };
   const openImageDialog = () => {
     setShowImageDialog(true);
@@ -115,24 +121,26 @@ export default function ChatContainer({ currentChat, onSave, stompClient, messag
       }
       setIsScrolled(scrollTop > 0);
     };
-  
+
     if (scrollRef.current) {
-      scrollRef.current.addEventListener('scroll', handleScroll);
+      scrollRef.current.addEventListener("scroll", handleScroll);
     }
-  
+
     return () => {
       if (scrollRef.current) {
-        scrollRef.current.removeEventListener('scroll', handleScroll);
+        scrollRef.current.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [isScrolled, reachedEnd]); 
+  }, [isScrolled, reachedEnd]);
 
   useEffect(() => {
-    if ((initialLoad && isScrolled && !reachedEnd) || (lastFetchLength.current < 20 && !reachedEnd)) {
+    if (
+      (initialLoad && isScrolled && !reachedEnd) ||
+      (lastFetchLength.current < 20 && !reachedEnd)
+    ) {
       scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   }, [initialLoad, isScrolled, reachedEnd]);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -141,7 +149,7 @@ export default function ChatContainer({ currentChat, onSave, stompClient, messag
         setMessages(initialMessages);
         setInitialLoad(true);
       } catch (error) {
-        console.error('Lỗi khi tải tin nhắn:', error);
+        console.error("Lỗi khi tải tin nhắn:", error);
       }
     };
     fetchData();
@@ -151,14 +159,19 @@ export default function ChatContainer({ currentChat, onSave, stompClient, messag
     <Container>
       <div className="chat-header">
         <div className="user-details">
-        <div className="avatar" onClick={openImageDialog}> 
-        {
-            Message_group_image?
-            <img src={`http://localhost:8080/${Message_group_image}`} alt="" />:
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU" alt="Defaut Image" />
-          
-        }
-        </div>
+          <div className="avatar" onClick={openImageDialog}>
+            {Message_group_image ? (
+              <img
+                src={`http://localhost:8080/${Message_group_image}`}
+                alt=""
+              />
+            ) : (
+              <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU"
+                alt="Defaut Image"
+              />
+            )}
+          </div>
           <div className="nameChat">
             {Message_group_name ? (
               <h3>{Message_group_name}</h3>
@@ -167,14 +180,17 @@ export default function ChatContainer({ currentChat, onSave, stompClient, messag
             )}
           </div>
           <div className="editName">
-            <button className="editButton" onClick={() => setShowEditDialog(true)}>
+            <button
+              className="editButton"
+              onClick={() => setShowEditDialog(true)}
+            >
               <p>✎</p>
             </button>
             {showEditDialog && (
               <UpdateNameMG
-               handleClose={handleCloseEditDialog}
-               groupId={MessageGroupId}
-               updateGroupName={updateGroupName} // Truyền hàm callback vào component con
+                handleClose={handleCloseEditDialog}
+                groupId={MessageGroupId}
+                updateGroupName={updateGroupName} // Truyền hàm callback vào component con
               />
             )}
           </div>
@@ -182,44 +198,75 @@ export default function ChatContainer({ currentChat, onSave, stompClient, messag
         <Logout />
       </div>
       {showImageDialog && (
-         <Modal onClick={closeImageDialog}>
+        <Modal onClick={closeImageDialog}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <UploadImages 
-                  closeDialog={closeImageDialog} 
-                  GroupID={MessageGroupId} 
-                  onImageUpload={uploadImg} />  
+            <UploadImages
+              closeDialog={closeImageDialog}
+              GroupID={MessageGroupId}
+              onImageUpload={uploadImg}
+            />
             <CloseButton onClick={closeImageDialog}>&times;</CloseButton>
           </ModalContent>
         </Modal>
       )}
-       <div className="chat-messages" ref={scrollRef}>
-        {messages.slice().reverse().map((message, index) => (
-          <MessageBubble ref={index === messages.length - 1 ? scrollRef : null} key={uuidv4()} fromSelf={message.fromSelf}>
-            {message.fromSelf ? null : <div className="sender-name">{message.Sender_user.user_name}</div>}
-            <div className={`message ${message.fromSelf ? "sended" : "recieved"}`}>
-              <div className="content">
-                <p>{message.Content}</p>
-                {message.Type === "image" && <img src={message.Media_path} alt="Attached" />}
-                {message.Attach_file && (
-                  <div>
-                    <a href={message.Attach_file.path} target="_blank" rel="noopener noreferrer">Download File</a>
-                  </div>
-                )}
-              </div>
+      <div className="chat-messages" ref={scrollRef}>
+        {messages
+          .slice()
+          .reverse()
+          .map((message, index) => (
+            <MessageBubble
+              ref={index === messages.length - 1 ? scrollRef : null}
+              key={uuidv4()}
+              fromSelf={message.fromSelf}
+            >
+              {message.fromSelf ? null : (
+                <div className="sender-name">
+                  {message.Sender_user.user_name}
+                </div>
+              )}
+              <div
+                className={`message ${
+                  message.fromSelf ? "sended" : "recieved"
+                }`}
+              >
+                <div className="content">
+                  <p>{message.Content}</p>
+                  {message.Type === "image" && (
+                    <img src={message.Media_path} alt="Attached" />
+                  )}
+                  {message.Attach_file && (
+                    <div>
+                      <a
+                        href={message.Attach_file.path}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Download File
+                      </a>
+                    </div>
+                  )}
+                </div>
 
-              <div className="message-info">
-                <span>Sent at {new Date(message.Created_date).toLocaleString()}</span>
-                {message.Reply_to_msg && <span> | Replying to: {message.Reply_to_msg.content}</span>}
-                <div>Seen by: {message.Seen_by?.join(', ') || 'None'}</div>
+                <div className="message-info">
+                  <span>
+                    Sent at {new Date(message.Created_date).toLocaleString()}
+                  </span>
+                  {message.Reply_to_msg && (
+                    <span> | Replying to: {message.Reply_to_msg.content}</span>
+                  )}
+                  <div>Seen by: {message.Seen_by?.join(", ") || "None"}</div>
+                </div>
               </div>
-            </div>
-            <div className="message-time">
-              {new Date(message.Created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </div>
-          </MessageBubble>
-        ))}
+              <div className="message-time">
+                {new Date(message.Created_date).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+            </MessageBubble>
+          ))}
       </div>
-      <ChatInput stompClient={stompClient} currentChat={currentChat}/>
+      <ChatInput stompClient={stompClient} currentChat={currentChat} />
     </Container>
   );
 }
@@ -282,9 +329,8 @@ const Container = styled.div`
     flex-direction: column;
     gap: 10px;
 
-    overflow-y: auto; 
+    overflow-y: auto;
     max-height: calc(100vh - 200px);
-
 
     .message {
       position: relative;
@@ -337,7 +383,7 @@ const Modal = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index:999;
+  z-index: 999;
 `;
 
 const ModalContent = styled.div`

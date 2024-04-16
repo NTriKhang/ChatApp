@@ -1,11 +1,11 @@
 import { useQuery } from 'react-query';
 import axios from 'axios';
-import { updateUserMessageGroupRoute } from "../utils/APIRoutes"; // Import route lấy dữ liệu người dùng và cập nhật
+import { getMessageGroupRoute } from "../utils/APIRoutes"; // Import route lấy dữ liệu người dùng và cập nhật
 import { getConnectStateLocal } from '../utils/LocalStorage';
 
 const endpoint = async (id) => {
     const connectStateString = getConnectStateLocal();
-    const response = await axios.get(updateUserMessageGroupRoute(id, connectStateString));
+    const response = await axios.get(getMessageGroupRoute(id, connectStateString));
     return response.data;
 };
 

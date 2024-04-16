@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import Contacts from "../components/Contacts"; 
-import styled from 'styled-components';
+import React, { useState, useEffect } from "react";
+import Contacts from "../components/Contacts";
+import styled from "styled-components";
 import ChatContainer from "../components/ChatContainer";
 
 import Welcome from "../components/Welcome";
 ///Khang
-import { over } from 'stompjs';
-import SockJS from 'sockjs-client';
-import { getCurrentUserLocal, setConnectState, setConnectStateLocal } from '../utils/LocalStorage';
+import { over } from "stompjs";
+import SockJS from "sockjs-client";
+import { getCurrentUserLocal } from "../utils/LocalStorage";
+import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
 
 var stompClient = null;
 
@@ -15,63 +16,68 @@ const ChatPage = () => {
   const [currentChat, setCurrentChat] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
   const [contacts, setContacts] = useState([]);
-  const [updatename, setUpdateName] = useState('');
-  const [message, setMessage] = useState({})
+  const [message, setMessage] = useState({});
   ///Khang
-  const [isConenct, setIsConnect] = useState(false)
+  const [isConenct, setIsConnect] = useState(false);
 
-  const connect =()=>{
-    let Sock = new SockJS('http://localhost:8080/ws');
-    stompClient = over(Sock);     
-    stompClient.connect({},onConnected, onError);
+  const currentUser = getCurrentUserLocal();
+
+  const { data: messageGroup, refetch } = useGetMessageGroup(currentUser._id);
+
+  const connect = () => {
+    let Sock = new SockJS("http://localhost:8080/ws");
+    stompClient = over(Sock);
+    stompClient.connect({}, onConnected, onError);
     // stompClient.disconnect(function(){
     //   console.log("disconnected")
     // })
-    console.log(stompClient)
-
-  }
+    console.log(stompClient);
+  };
   const onConnected = () => {
     var userId = getCurrentUserLocal()["_id"];
-    console.log("id " + userId)
-    stompClient.subscribe('/user/'+userId+'/message_group', onGroupMessage);
-  }
+    console.log("id " + userId);
+    stompClient.subscribe("/user/" + userId + "/message_group", onGroupMessage);
+  };
+
   const onGroupMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
-    console.log("On socket response ", payloadData)
-    setMessage(payloadData)
-  }
+    console.log("On socket response ", payloadData);
+    setMessage(payloadData);
+  };
   const onError = (err) => {
     console.log(err);
-    
-  }
-  const onSave = (newName) => {
-    setUpdateName(newName);
-  }
+  };
+
+  const onSave = () => {
+    refetch();
+  };
 
   const updateContactInfo = (updatedContact) => {
-    const updatedContacts = contacts.map(contact => {
+    const updatedContacts = contacts.map((contact) => {
       if (contact.MessageGroupId === updatedContact.MessageGroupId) {
         return updatedContact;
       }
       return contact;
     });
-    setContacts(updatedContacts); 
+    setContacts(updatedContacts);
   };
+
   const changeChat = (newChat) => {
     setCurrentChat(newChat);
   };
-  
+
   const changeCurrentChat = (index, contact) => {
-    changeChat(contact); 
+    changeChat(contact);
     setShowWelcome(false);
   };
+
   const updateGroupName = (newGroupName) => {
-    setCurrentChat(prevChat => ({
+    setCurrentChat((prevChat) => ({
       ...prevChat,
-      Message_group_name: newGroupName
+      Message_group_name: newGroupName,
     }));
   };
-  
+
   useEffect(() => {
     if (isConenct === false) {
       connect();
@@ -80,22 +86,19 @@ const ChatPage = () => {
 
   return (
     <PageContainer>
-      <div className='container'>
-      <Contacts 
-            changeChat={changeChat} 
-            changeCurrentChat={changeCurrentChat} 
-            onSave={updatename}/>
+      <div className="container">
+        <Contacts messageGroup={messageGroup} changeChat={changeChat} />
 
-
-
-        {currentChat ? ( 
-          <ChatContainer 
-          currentChat={currentChat} 
-          onSave={onSave}
-          stompClient={stompClient}
-          messagePayload={message}/>
+        {currentChat ? (
+          <ChatContainer
+            messageGroup={messageGroup}
+            currentChat={currentChat}
+            onSave={onSave}
+            stompClient={stompClient}
+            messagePayload={message}
+          />
         ) : (
-          <Welcome /> 
+          <Welcome />
         )}
       </div>
     </PageContainer>
