@@ -24,29 +24,31 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
     // console.log(stompClient)
     // console.log(currentChat.MessageGroupId)
     var currentUser = getCurrentUserLocal();
-    
+    console.log(currentChat)
     if (msg.length > 0) {
-      //handleSendMsg(msg);
-      let messageTextDto = {
-        Content : msg,
-        Message_group_id: currentChat.MessageGroupId,
-        Sender_user: {
-          user_id: currentUser._id,
-          user_name: currentUser.Display_name
+      if(currentChat.Message_group_type === 'Group'){
+        let messageTextDto = {
+          Content : msg,
+          Message_group_id: currentChat.MessageGroupId,
+          Sender_user: {
+            user_id: currentUser._id,
+            user_name: currentUser.Display_name
+          }
         }
+        stompClient.send("/app/sendMessage", {}, JSON.stringify(messageTextDto))
+        //console.log(messageTextDto)
       }
-      stompClient.send("/app/sendMessage", {}, JSON.stringify(messageTextDto))
-      //console.log(messageTextDto)
-      setMsg("");
-    }
-    else{
-      let messageTextIndDto = {
-        Content: "test private message",
-        SenderName: "ivy quoc123",
-        SenderId: "65dfd0041e074622e7cd00b7",
-        ReceiverId: "65dfd0041e074622e7cd00b8"
+      else{
+        let messageTextIndDto = {
+          Content: msg,
+          SenderName: currentUser.Display_name,
+          SenderId: currentUser._id,
+          MsgGroupSenderId: currentChat.MessageGroupId,
+          ReceiverId: currentChat.ReceiverId
+        }
+        stompClient.send("/app/sendIndMessage", {}, JSON.stringify(messageTextIndDto))
       }
-      stompClient.send("/app/sendIndMessage", {}, JSON.stringify(messageTextIndDto))
+      setMsg(""); 
     }
   };
 

@@ -10,9 +10,10 @@ public class UserGroupDto {
 	public Boolean Is_read;
 	public String Role;
 	public String Message_group_type;
+	public String ReceiverId;
 	
 	public UserGroupDto(String messageGroupId, String message_group_name, String message_group_image,
-			LastMessage_MsgGroup last_message, Boolean is_read, String role, String groupType) {
+			LastMessage_MsgGroup last_message, Boolean is_read, String role, String groupType, String receiverId) {
 		super();
 		this.MessageGroupId = messageGroupId;
 		Message_group_name = message_group_name;
@@ -21,5 +22,6 @@ public class UserGroupDto {
 		Is_read = is_read;
 		Role = role;
 		Message_group_type = groupType;
+		ReceiverId = receiverId;
 	}
 }

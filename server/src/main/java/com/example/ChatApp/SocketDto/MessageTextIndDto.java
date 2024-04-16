@@ -6,8 +6,8 @@ public class MessageTextIndDto {
 	public String Content;
 	public String SenderId;
 	public String SenderName;
-	public String MsgSenderId = ""; 
-	public String ReceiverId;
-	public String MsgReceiverId = "";
 	
+	public String MsgGroupSenderId = ""; 
+	
+	public String ReceiverId = "";	
 }

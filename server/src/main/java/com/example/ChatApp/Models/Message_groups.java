@@ -16,8 +16,8 @@ public class Message_groups {
 	public String Message_group_name;
 	public String Message_group_image;
 	public LastMessage_MsgGroup Last_message;
-	public String MsgGroupType = null; // có 2 loại, 1 là group thông thường, 2 là Individual (này là tượng trưng cho nhắn tin cá nhân)
-	public String MsgConnectedId = null;
+	public String MsgGroupType; // có 2 loại, 1 là group thông thường, 2 là Individual (này là tượng trưng cho nhắn tin cá nhân)
+	public String MsgConnectedId;
 
 	/*
 	 * public Message_groups(String _id, String message_group_name, String

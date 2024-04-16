@@ -2,6 +2,7 @@ package com.example.ChatApp.Controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableLoadTimeWeaving;
@@ -25,9 +26,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Models.Messages;
 import com.example.ChatApp.Models.Submodels.SenderUser_Msg;
 import com.example.ChatApp.Repositories.MessageRepository;
+import com.example.ChatApp.Services.MessageGroupService;
 import com.example.ChatApp.Services.MessageService;
 import com.example.ChatApp.Services.SocketService;
 import com.example.ChatApp.SocketDto.MessageTextDto;
@@ -44,6 +47,8 @@ import jakarta.websocket.server.PathParam;
 public class MessagesController {
 	@Autowired
 	private MessageService messageService;
+	@Autowired
+	private MessageGroupService messageGroupService;
 	@Autowired
 	private SocketService socketService;
 	
@@ -63,11 +68,17 @@ public class MessagesController {
 	public MessageTextIndDto sendIndMessage(@Payload MessageTextIndDto messageTextIndDto) {
 		try {
 			List<Messages> messageList;
-			if(messageTextIndDto.MsgSenderId == "" && messageTextIndDto.MsgReceiverId == "") {		
+			if(messageTextIndDto.MsgGroupSenderId == "") {		
 				messageList = messageService.InitPrivateMessage(messageTextIndDto);		
 			}
-			else if(messageTextIndDto.MsgSenderId != "" && messageTextIndDto.MsgReceiverId != "") {
-				messageList = messageService.insertBothMessage(new SenderUser_Msg(messageTextIndDto.SenderId, messageTextIndDto.SenderName) , messageTextIndDto.MsgSenderId, messageTextIndDto.MsgReceiverId, messageTextIndDto.Content);
+			else if(messageTextIndDto.MsgGroupSenderId != "") {
+				Optional<Message_groups> senderGroup = messageGroupService.getMsgGroupById(messageTextIndDto.MsgGroupSenderId);
+				if(!senderGroup.isPresent()) {
+					System.err.println("Invalid parameter");
+					socketService.sendErrorToUser(messageTextIndDto.SenderId);
+					return messageTextIndDto;
+				}
+				messageList = messageService.insertBothMessage(new SenderUser_Msg(messageTextIndDto.SenderId, messageTextIndDto.SenderName) , messageTextIndDto.MsgGroupSenderId, senderGroup.get().MsgConnectedId, messageTextIndDto.Content);
 			}
 			else {
 				System.err.println("Invalid parameter");
