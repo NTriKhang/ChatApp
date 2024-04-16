@@ -28,7 +28,7 @@ export default function Contacts({ changeChat }) {
   const currentUser = getCurrentUserLocal();
   const [currentUserImage, setCurrentUserImage] = useState("");
   const [currentSelected, setCurrentSelected] = useState(null);
-
+  
   const { mutateAsync: updateUser } = useUpdateUser();
   const { mutateAsync: uploadImage } = useUploadImageUser();
   const { mutateAsync: uploadBackground } = useUploadBackgroundImageUser();
