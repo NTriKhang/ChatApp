@@ -29,6 +29,8 @@ export default function ChatContainer({
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImageDialog, setShowImageDialog] = useState(false);
 
+  console.log("current chat", currentChat)
+  
   const fetchMessages = async (page) => {
     try {
       const response = await axios.get(
@@ -153,7 +155,7 @@ export default function ChatContainer({
       }
     };
     fetchData();
-  }, [messagePayload]);
+  }, [messagePayload, currentChat]);
 
   return (
     <Container>
@@ -162,7 +164,7 @@ export default function ChatContainer({
           <div className="avatar" onClick={openImageDialog}>
             {Message_group_image ? (
               <img
-                src={`http://localhost:8080/${Message_group_image}`}
+                src={Message_group_image}
                 alt=""
               />
             ) : (

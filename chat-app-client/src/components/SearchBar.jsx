@@ -14,7 +14,7 @@ export default function SearchBar({ onSearch }) {
     <SearchContainer>
       <SearchInput
         type="text"
-        placeholder="Search..."
+        placeholder="@Tag"
         value={searchTerm}
         onChange={handleSearchChange}
       />

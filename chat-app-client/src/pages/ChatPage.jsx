@@ -17,20 +17,14 @@ const ChatPage = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   const [contacts, setContacts] = useState([]);
   const [message, setMessage] = useState({});
-  ///Khang
-  const [isConenct, setIsConnect] = useState(false);
-
+  const [isConnect, setIsConnect] = useState(false);
   const currentUser = getCurrentUserLocal();
-
   const { data: messageGroup, refetch } = useGetMessageGroup(currentUser._id);
 
   const connect = () => {
     let Sock = new SockJS("http://localhost:8080/ws");
     stompClient = over(Sock);
     stompClient.connect({}, onConnected, onError);
-    // stompClient.disconnect(function(){
-    //   console.log("disconnected")
-    // })
     console.log(stompClient);
   };
   const onConnected = () => {
@@ -92,7 +86,7 @@ const ChatPage = () => {
   return (
     <PageContainer>
       <div className="container">
-        <Contacts messageGroup={messageGroup} changeChat={changeChat} stompClient={stompClient} />
+        <Contacts messageGroup={messageGroup} changeChat={changeChat}/>
 
         {currentChat ? (
           <ChatContainer
