@@ -2,6 +2,7 @@ package com.example.ChatApp.Controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableLoadTimeWeaving;
@@ -25,11 +26,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Models.Messages;
+import com.example.ChatApp.Models.Submodels.SenderUser_Msg;
 import com.example.ChatApp.Repositories.MessageRepository;
+import com.example.ChatApp.Services.MessageGroupService;
 import com.example.ChatApp.Services.MessageService;
 import com.example.ChatApp.Services.SocketService;
 import com.example.ChatApp.SocketDto.MessageTextDto;
+import com.example.ChatApp.SocketDto.MessageTextIndDto;
 import com.example.ChatApp.dto.GroupIdRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -42,6 +47,8 @@ import jakarta.websocket.server.PathParam;
 public class MessagesController {
 	@Autowired
 	private MessageService messageService;
+	@Autowired
+	private MessageGroupService messageGroupService;
 	@Autowired
 	private SocketService socketService;
 	
@@ -57,7 +64,41 @@ public class MessagesController {
 			return messageTextDto;
 		}
 	}
-	
+	@MessageMapping("/sendIndMessage")
+	public MessageTextIndDto sendIndMessage(@Payload MessageTextIndDto messageTextIndDto) {
+		try {
+			List<Messages> messageList;
+			if(messageTextIndDto.MsgGroupSenderId == "") {		
+				messageList = messageService.InitPrivateMessage(messageTextIndDto);		
+			}
+			else if(messageTextIndDto.MsgGroupSenderId != "") {
+				Optional<Message_groups> senderGroup = messageGroupService.getMsgGroupById(messageTextIndDto.MsgGroupSenderId);
+				if(!senderGroup.isPresent()) {
+					System.err.println("Invalid parameter");
+					socketService.sendErrorToUser(messageTextIndDto.SenderId);
+					return messageTextIndDto;
+				}
+				messageList = messageService.insertBothMessage(new SenderUser_Msg(messageTextIndDto.SenderId, messageTextIndDto.SenderName) , messageTextIndDto.MsgGroupSenderId, senderGroup.get().MsgConnectedId, messageTextIndDto.Content);
+			}
+			else {
+				System.err.println("Invalid parameter");
+				socketService.sendErrorToUser(messageTextIndDto.SenderId);
+				return messageTextIndDto;
+			}
+			
+			if(messageList == null)
+				socketService.sendErrorToUser(messageTextIndDto.SenderId);
+			socketService.sendPrivateMessage(messageTextIndDto.SenderId, messageTextIndDto.ReceiverId, messageList.get(0), messageList.get(1));
+			return messageTextIndDto;
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.err.println(e.getMessage());
+
+			e.getStackTrace();
+			socketService.sendErrorToUser(messageTextIndDto.SenderId);
+			return messageTextIndDto;
+		}
+	}
 	@GetMapping()
 	public ResponseEntity<List<Messages>> getAll(){
 

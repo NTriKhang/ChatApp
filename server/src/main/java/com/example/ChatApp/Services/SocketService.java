@@ -49,6 +49,10 @@ public class SocketService {
             }
         }
 	}
+	public void sendPrivateMessage(String senderId, String receiverId, Messages messageSender, Messages messageReceiver) {
+		simpMessagingTemplate.convertAndSendToUser(senderId, "/message", messageSender);
+		simpMessagingTemplate.convertAndSendToUser(receiverId, "/message", messageReceiver);
+	}
 	public void sendErrorToUser(String userId) {
 		simpMessagingTemplate.convertAndSendToUser(userId, "/error", "Something mighr wrong, error occur");
 	}

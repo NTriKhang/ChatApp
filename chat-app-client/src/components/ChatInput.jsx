@@ -24,20 +24,31 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
     // console.log(stompClient)
     // console.log(currentChat.MessageGroupId)
     var currentUser = getCurrentUserLocal();
-    
+    console.log(currentChat)
     if (msg.length > 0) {
-      //handleSendMsg(msg);
-      let messageTextDto = {
-        Content : msg,
-        Message_group_id: currentChat.MessageGroupId,
-        Sender_user: {
-          user_id: currentUser._id,
-          user_name: currentUser.Display_name
+      if(currentChat.Message_group_type === 'Group'){
+        let messageTextDto = {
+          Content : msg,
+          Message_group_id: currentChat.MessageGroupId,
+          Sender_user: {
+            user_id: currentUser._id,
+            user_name: currentUser.Display_name
+          }
         }
+        stompClient.send("/app/sendMessage", {}, JSON.stringify(messageTextDto))
+        //console.log(messageTextDto)
       }
-      stompClient.send("/app/sendMessage", {}, JSON.stringify(messageTextDto))
-      //console.log(messageTextDto)
-      setMsg("");
+      else{
+        let messageTextIndDto = {
+          Content: msg,
+          SenderName: currentUser.Display_name,
+          SenderId: currentUser._id,
+          MsgGroupSenderId: currentChat.MessageGroupId,
+          ReceiverId: currentChat.ReceiverId
+        }
+        stompClient.send("/app/sendIndMessage", {}, JSON.stringify(messageTextIndDto))
+      }
+      setMsg(""); 
     }
   };
 
@@ -176,3 +187,5 @@ const Container = styled.div`
     }
   }
 `;
+
+

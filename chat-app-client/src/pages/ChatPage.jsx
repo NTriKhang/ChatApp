@@ -35,10 +35,15 @@ const ChatPage = () => {
   };
   const onConnected = () => {
     var userId = getCurrentUserLocal()["_id"];
-    console.log("id " + userId);
-    stompClient.subscribe("/user/" + userId + "/message_group", onGroupMessage);
-  };
-
+    console.log("id " + userId)
+    stompClient.subscribe('/user/' + userId + '/message_group', onGroupMessage);
+    stompClient.subscribe('/user/' + userId + '/message', onMessage);
+  }
+  const onMessage = (payload) => {
+    var payloadData = JSON.parse(payload.body);
+    console.log("On socket response ", payloadData)
+    setMessage(payloadData)
+  }
   const onGroupMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
     console.log("On socket response ", payloadData);
@@ -79,7 +84,7 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
-    if (isConenct === false) {
+    if (isConnect === false) {
       connect();
     }
   }, []);
@@ -87,7 +92,7 @@ const ChatPage = () => {
   return (
     <PageContainer>
       <div className="container">
-        <Contacts messageGroup={messageGroup} changeChat={changeChat} />
+        <Contacts messageGroup={messageGroup} changeChat={changeChat} stompClient={stompClient} />
 
         {currentChat ? (
           <ChatContainer
@@ -103,7 +108,7 @@ const ChatPage = () => {
       </div>
     </PageContainer>
   );
-};
+}
 
 export default ChatPage;
 const PageContainer = styled.div`
