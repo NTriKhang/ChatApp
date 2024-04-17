@@ -11,36 +11,37 @@ import {
 } from "../utils/LocalStorage";
 import axios from "axios";
 import moment from "moment";
-import SearchBar from "./SearchBar"; 
-
+import SearchBar from "./SearchBar";
 
 import { useUpdateUser } from "../hooks/useUpdateUser";
 import { useUploadImageUser } from "../hooks/useUploadImageUser";
 import { useUploadBackgroundImageUser } from "../hooks/useUploadBackgroundImageUser";
 import { UploadImage } from "./upload/UploadImage";
-import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
 
-export default function Contacts({ changeChat }) {
+export default function Contacts({ changeChat, messageGroup }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenAvatar, setIsModalOpenAvatar] = useState(false);
   const [isModalOpenBackground, setIsModalOpenBackground] = useState(false);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
+  const [titleChat, setTitleChat] = useState("");
   const currentUser = getCurrentUserLocal();
+
   const [currentUserImage, setCurrentUserImage] = useState("");
   const [currentSelected, setCurrentSelected] = useState(null);
   
   const { mutateAsync: updateUser } = useUpdateUser();
   const { mutateAsync: uploadImage } = useUploadImageUser();
   const { mutateAsync: uploadBackground } = useUploadBackgroundImageUser();
-  const { data: messageGroup, refetch } = useGetMessageGroup(currentUser._id);
-// gọi hàm "refetch" phía trên để call lại api
 
-  console.log(currentUser);
+  // gọi hàm "refetch" phía trên để call lại api
 
-  const changeCurrentChat = (index, contact) => {
-    setCurrentSelected(index);
-    changeChat(contact);
+  const changeCurrentChat = (contact, index) => {
+    setTitleChat({contact, index});
   };
+
+  useEffect(() => {
+    changeChat({...titleChat?.contact, Message_group_name: messageGroup?.[titleChat?.index]?.Message_group_name});
+  }, [titleChat, messageGroup]);
 
   const handleCancel = () => {
     setIsModalOpen(false);
@@ -84,16 +85,13 @@ export default function Contacts({ changeChat }) {
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
-  
-
 
   const onUpdateImage = async (values) => {
-    console.log("values", values?.url, currentUser._id);
     if (values?.url) {
       const res = await uploadImage({
         id: currentUser._id,
         url: {
-          imageUrl: values?.url
+          imageUrl: values?.url,
         },
       });
       if (!res) return;
@@ -101,14 +99,12 @@ export default function Contacts({ changeChat }) {
     }
   };
 
-
   const onUpdateBackground = async (values) => {
-    console.log("values", values?.url, currentUser._id);
     if (values?.url) {
       const res = await uploadBackground({
         id: currentUser._id,
         url: {
-          imageUrl: values?.url
+          imageUrl: values?.url,
         },
       });
       if (!res) return;
@@ -117,10 +113,9 @@ export default function Contacts({ changeChat }) {
   };
 
   const handleSearch = (searchTerm) => {
-    // Handle search logic here
     console.log("Search term:", searchTerm);
   };
-  
+
   return (
     <>
       <Container>
@@ -128,7 +123,8 @@ export default function Contacts({ changeChat }) {
           <img src={Logo} alt="logo" />
           <h3>App chat</h3>
         </div>
-        <SearchBar onSearch={handleSearch} /> {/* Insert the SearchBar component here */}
+        <SearchBar onSearch={handleSearch} />{" "}
+        {/* Insert the SearchBar component here */}
         <div className="contacts">
           {messageGroup?.map((contact, index) => (
             <div
@@ -136,14 +132,11 @@ export default function Contacts({ changeChat }) {
               className={`contact ${
                 index === currentSelected ? "selected" : ""
               }`}
-              onClick={() => changeCurrentChat(index, contact)}
+              onClick={() => changeCurrentChat(contact, index)}
             >
               <div className="avatar">
                 {contact.Message_group_image ? (
-                  <img
-                    src={`http://localhost:8080/${contact.Message_group_image}`}
-                    alt=""
-                  />
+                  <img src={contact.Message_group_image} alt="" />
                 ) : (
                   <img
                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU"
@@ -173,15 +166,9 @@ export default function Contacts({ changeChat }) {
             <div className="flex flex-column items-center">
               <div className="avatar">
                 {currentUserImage ? (
-                  <img
-                    src={currentUser.Image_path}
-                    alt="avatar"
-                  />
+                  <img src={currentUser.Image_path} alt="avatar" />
                 ) : (
-                  <img
-                    src={currentUser.Image_path}
-                    alt="avatar"
-                  />
+                  <img src={currentUser.Image_path} alt="avatar" />
                 )}
               </div>
               <div className="username">
@@ -217,14 +204,14 @@ export default function Contacts({ changeChat }) {
                     className="px-4 py-5 sm:px-6"
                     style={{
                       backgroundImage: `url(${currentUser.Background_image_path})`,
-                      backgroundRepeat: 'no-repeat',
-                      backgroundSize: 'cover'
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "cover",
                     }}
                   >
                     <Image
                       width={60}
                       height={60}
-                      style={{objectFit: 'cover'}}
+                      style={{ objectFit: "cover" }}
                       src={currentUser.Image_path}
                     />
                     <span
@@ -268,7 +255,7 @@ export default function Contacts({ changeChat }) {
                       <UploadImage onChangeImage={onUpdateBackground} />
                     </Modal>
                   </div>
-                  
+
                   <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
                     <dl className="sm:divide-y sm:divide-gray-200">
                       <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
