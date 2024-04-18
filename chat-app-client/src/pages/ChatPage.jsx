@@ -20,7 +20,7 @@ const ChatPage = () => {
   const [isConnect, setIsConnect] = useState(false);
   const currentUser = getCurrentUserLocal();
   const { data: messageGroup, refetch } = useGetMessageGroup(currentUser._id);
-
+  
   const connect = () => {
     let Sock = new SockJS("http://localhost:8080/ws");
     stompClient = over(Sock);
@@ -51,16 +51,6 @@ const ChatPage = () => {
     refetch();
   };
 
-  const updateContactInfo = (updatedContact) => {
-    const updatedContacts = contacts.map((contact) => {
-      if (contact.MessageGroupId === updatedContact.MessageGroupId) {
-        return updatedContact;
-      }
-      return contact;
-    });
-    setContacts(updatedContacts);
-  };
-
   const changeChat = (newChat) => {
     setCurrentChat(newChat);
   };
@@ -68,13 +58,6 @@ const ChatPage = () => {
   const changeCurrentChat = (index, contact) => {
     changeChat(contact);
     setShowWelcome(false);
-  };
-
-  const updateGroupName = (newGroupName) => {
-    setCurrentChat((prevChat) => ({
-      ...prevChat,
-      Message_group_name: newGroupName,
-    }));
   };
 
   useEffect(() => {
@@ -86,7 +69,7 @@ const ChatPage = () => {
   return (
     <PageContainer>
       <div className="container">
-        <Contacts messageGroup={messageGroup} changeChat={changeChat}/>
+        <Contacts messageGroup={messageGroup} changeChat={changeCurrentChat} currentChat={currentChat}/>
 
         {currentChat ? (
           <ChatContainer

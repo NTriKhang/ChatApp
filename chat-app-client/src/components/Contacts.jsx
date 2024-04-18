@@ -18,7 +18,7 @@ import { useUploadImageUser } from "../hooks/useUploadImageUser";
 import { useUploadBackgroundImageUser } from "../hooks/useUploadBackgroundImageUser";
 import { UploadImage } from "./upload/UploadImage";
 
-export default function Contacts({ changeChat, messageGroup }) {
+export default function Contacts({ changeChat, messageGroup, currentChat }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenAvatar, setIsModalOpenAvatar] = useState(false);
   const [isModalOpenBackground, setIsModalOpenBackground] = useState(false);
@@ -36,11 +36,16 @@ export default function Contacts({ changeChat, messageGroup }) {
   // gọi hàm "refetch" phía trên để call lại api
 
   const changeCurrentChat = (contact, index) => {
+    changeChat(index, contact)
     setTitleChat({contact, index});
   };
 
   useEffect(() => {
-    changeChat({...titleChat?.contact, Message_group_name: messageGroup?.[titleChat?.index]?.Message_group_name});
+    console.log('log msg in contact', currentChat)
+    if(currentChat !== null){
+      console.log('right')
+      changeChat(0,{...titleChat?.contact, Message_group_name: messageGroup?.[titleChat?.index]?.Message_group_name});
+    }
   }, [titleChat, messageGroup]);
 
   const handleCancel = () => {
@@ -383,6 +388,7 @@ export default function Contacts({ changeChat, messageGroup }) {
 }
 
 const Container = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   background-color: #0f0c29; /* Deep blue background */
@@ -405,12 +411,13 @@ const Container = styled.div`
   }
 
   .contacts {
-    flex: 1;
-    overflow-y: auto;
+    overflow-y: auto; 
     padding: 20px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
+    max-height: 70vh; 
+    margin-bottom: 10px;
     &::-webkit-scrollbar {
       width: 5px;
     }
@@ -418,7 +425,7 @@ const Container = styled.div`
       background: #5d5d5d;
     }
     .contact {
-      height: 15%;
+      flex-grow: 1; 
       display: flex;
       align-items: center;
       background-color: #222034;
@@ -426,6 +433,7 @@ const Container = styled.div`
       border-radius: 8px;
       cursor: pointer;
       transition: transform 0.2s ease-in-out;
+      margin-bottom: 10px;
       &:hover {
         transform: translateY(-5px);
       }
@@ -458,15 +466,21 @@ const Container = styled.div`
   }
 
   .current-user {
+    position: absolute ;
+    bottom: 0;
+    left: 0; /* Đảm bảo phần tử nằm ở mép trái của màn hình */
+    width: 100%; /* Phủ toàn bộ chiều rộng của màn hình */
     background-color: #222034;
     padding: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 1;
     .avatar img {
       border-radius: 50%;
       width: 50px;
       height: 50px;
+      max-width:200px !important;
     }
     .username h2 {
       margin-left: 15px;
