@@ -1,5 +1,7 @@
 package com.example.ChatApp.Controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,5 +28,14 @@ public class UserController {
 	    Users user = userService.findUserById(userId)
 	            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 	    return new ResponseEntity<>(user, HttpStatus.OK);
+	}
+	
+	@GetMapping("/findUser/{tag}")
+	public ResponseEntity<List<Users>> getListUserByTag(
+				@PathVariable("tag") String tag
+			) {
+		List<Users> listUser = userService.findUsersByTag(tag)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		return new ResponseEntity<>(listUser, HttpStatus.OK);
 	}
 }
