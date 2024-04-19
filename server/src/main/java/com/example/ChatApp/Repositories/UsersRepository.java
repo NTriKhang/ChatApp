@@ -1,5 +1,6 @@
 package com.example.ChatApp.Repositories;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
@@ -32,4 +33,6 @@ public interface UsersRepository extends MongoRepository<Users, ObjectId>{
     @Query(value="{ 'List_message_group.messageGroupId' : ?0 }")
     Optional<Users> findByMsgGroupId(ObjectId msgId);
 
+    @Query(value = "{ 'Tag': {$regex:/?0/i} }")
+    Optional<List<Users>> findUsersByTag(String tag);
 }
