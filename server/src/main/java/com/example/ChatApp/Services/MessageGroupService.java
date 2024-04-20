@@ -23,9 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.ChatApp.Config.Utility;
 import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Models.Users;
+import com.example.ChatApp.Models.Submodels.LastMessage_MsgGroup;
 import com.example.ChatApp.Models.Submodels.MessageGroup_User;
 import com.example.ChatApp.Repositories.MessageGroupsRepository;
 import com.example.ChatApp.Repositories.UsersRepository;
+import com.example.ChatApp.dto.CreateGroupDTO;
 import com.example.ChatApp.dto.MessageGroupUpdateDto;
 import com.example.ChatApp.dto.UserGroupDto;
 import com.mongodb.client.result.UpdateResult;
@@ -120,4 +122,54 @@ public class MessageGroupService {
 		return result;
 
 	}
+	
+	public String create_GroupString(CreateGroupDTO request) {
+		ObjectId obj_ID_LOGIN = new ObjectId(request.userCreatedId);
+		// HANDLE
+		System.out.println(request.MsgConnectedId);
+		Message_groups newGroup;
+		if(request.MsgConnectedId != "") {
+				newGroup = new Message_groups(
+					request.groupName,
+					"",
+					new LastMessage_MsgGroup(),
+					"Individual",
+					request.MsgConnectedId
+				);
+		}
+		else {
+				newGroup = new Message_groups(
+					request.groupName,
+					"",
+					new LastMessage_MsgGroup(),
+					"Group"
+				);
+		}
+		Message_groups savedGroup = messageGroupsRepository.save(newGroup);
+		List<ObjectId> userList = request.userList;
+		
+		// save admin = acc nao dang nhap la admin khi tao
+		Users userlogin = usersRepository.findById(obj_ID_LOGIN).orElse(null);
+		MessageGroup_User messageGroupUser_Login = new MessageGroup_User();
+		messageGroupUser_Login.messageGroupId = savedGroup._id;
+		userlogin.List_message_group.add(messageGroupUser_Login);
+		messageGroupUser_Login.role = "Admin";
+		usersRepository.save(userlogin);
+
+
+		// list user 
+		for (ObjectId userId : userList) {
+			Users user = usersRepository.findById(userId).orElse(null);
+			
+			if(user != null) {
+				MessageGroup_User messageGroupUser = new MessageGroup_User();
+				messageGroupUser.messageGroupId = savedGroup._id;
+				user.List_message_group.add(messageGroupUser);
+				messageGroupUser.role = "Participant";
+				usersRepository.save(user);
+			}
+		}
+		return null;
+	}
+
 }
