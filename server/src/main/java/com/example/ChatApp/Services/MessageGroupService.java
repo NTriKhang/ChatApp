@@ -63,19 +63,20 @@ public class MessageGroupService {
 				Optional<Message_groups> messageGroup = messageGroupsRepository.findById(msgId);
 
 				if (messageGroup.isPresent()) {
-					String receiverId = "";
+					//String receiverId = "";
 					Message_groups msGroups = messageGroup.get();
-					System.out.println(msGroups.MsgGroupType);
-					if(msGroups.MsgGroupType.equals(Utility.MsgGroupType.Individual)) {
-						Optional<Users> receiverUser = usersRepository.findByMsgGroupId(new ObjectId(msGroups.MsgConnectedId));
-						if(!receiverUser.isPresent())
-							return;
-						receiverId = receiverUser.get()._id;
-					}
+					/*
+					 * System.out.println(msGroups.MsgGroupType);
+					 * 
+					 * if(msGroups.MsgGroupType.equals(Utility.MsgGroupType.Individual)) {
+					 * Optional<Users> receiverUser = usersRepository.findByMsgGroupId(new
+					 * ObjectId(msGroups.MsgConnectedId)); if(!receiverUser.isPresent()) return;
+					 * receiverId = receiverUser.get()._id; }
+					 */
 					
 					rs.add(new UserGroupDto(msGroups._id, msGroups.Message_group_name,
 							msGroups.Message_group_image,
-							msGroups.Last_message, user_messGroup.isRead, user_messGroup.role, msGroups.MsgGroupType, receiverId));
+							msGroups.Last_message, user_messGroup.isRead, user_messGroup.role, msGroups.MsgGroupType, user_messGroup.receiverId));
 
 				}
 			});
