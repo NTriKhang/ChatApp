@@ -1,4 +1,4 @@
-package com.example.ChatApp.dto;
+package com.example.ChatApp.SocketDto;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ public class CreateGroupDTO {
 		public String userCreatedId;
 		public String groupName;
 	 	public List<ObjectId> userList;
-	    public String MsgConnectedId;
+	 	
 	    public CreateGroupDTO() {
 	    }
 //	    public CreateGroupDTO(String groupName, List<ObjectId> userList, 

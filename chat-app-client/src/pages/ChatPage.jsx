@@ -32,6 +32,10 @@ const ChatPage = () => {
     console.log("id " + userId)
     stompClient.subscribe('/user/' + userId + '/message_group', onGroupMessage);
     stompClient.subscribe('/user/' + userId + '/message', onMessage);
+    stompClient.subscribe('/user' + userId + '/notify', onNotify)
+  }
+  const onNotify = (payload) => {
+    console.log("On socket response ", payloads)
   }
   const onMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);

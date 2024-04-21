@@ -27,7 +27,7 @@ import com.example.ChatApp.Models.Submodels.LastMessage_MsgGroup;
 import com.example.ChatApp.Models.Submodels.MessageGroup_User;
 import com.example.ChatApp.Repositories.MessageGroupsRepository;
 import com.example.ChatApp.Repositories.UsersRepository;
-import com.example.ChatApp.dto.CreateGroupDTO;
+import com.example.ChatApp.SocketDto.CreateGroupDTO;
 import com.example.ChatApp.dto.MessageGroupUpdateDto;
 import com.example.ChatApp.dto.UserGroupDto;
 import com.mongodb.client.result.UpdateResult;
@@ -124,53 +124,33 @@ public class MessageGroupService {
 
 	}
 	
-	public String create_GroupString(CreateGroupDTO request) {
-		ObjectId obj_ID_LOGIN = new ObjectId(request.userCreatedId);
-		// HANDLE
-		System.out.println(request.MsgConnectedId);
+	public Message_groups create_GroupString(CreateGroupDTO request) {
+		ObjectId createdUserId = new ObjectId(request.userCreatedId);
+		
 		Message_groups newGroup;
-		if(request.MsgConnectedId != "") {
-				newGroup = new Message_groups(
-					request.groupName,
-					"",
-					new LastMessage_MsgGroup(),
-					"Individual",
-					request.MsgConnectedId
-				);
-		}
-		else {
-				newGroup = new Message_groups(
-					request.groupName,
-					"",
-					new LastMessage_MsgGroup(),
-					"Group"
-				);
-		}
+
+		newGroup = new Message_groups(request.groupName, "", new LastMessage_MsgGroup(), Utility.MsgGroupType.Group);
+
 		Message_groups savedGroup = messageGroupsRepository.save(newGroup);
+		
 		List<ObjectId> userList = request.userList;
 		
-		// save admin = acc nao dang nhap la admin khi tao
-		Users userlogin = usersRepository.findById(obj_ID_LOGIN).orElse(null);
-		MessageGroup_User messageGroupUser_Login = new MessageGroup_User();
-		messageGroupUser_Login.messageGroupId = savedGroup._id;
-		userlogin.List_message_group.add(messageGroupUser_Login);
-		messageGroupUser_Login.role = "Admin";
-		usersRepository.save(userlogin);
-
+	 	UpdateResult result = addUserGroup(createdUserId, new MessageGroup_User(savedGroup._id, true, Utility.Role.Admin, null));
+		if(!result.wasAcknowledged())
+			return null;
 
 		// list user 
 		for (ObjectId userId : userList) {
-			Users user = usersRepository.findById(userId).orElse(null);
-			
-			if(user != null) {
-				MessageGroup_User messageGroupUser = new MessageGroup_User();
-				messageGroupUser.messageGroupId = savedGroup._id;
-				user.List_message_group.add(messageGroupUser);
-				messageGroupUser.role = "Participant";
-				usersRepository.save(user);
-			}
+			result = addUserGroup(userId, new MessageGroup_User(savedGroup._id, true, Utility.Role.Participant, null));
+			if(!result.wasAcknowledged())
+				return null;
 		}
-		return null;
+		return savedGroup;
 	}
-
+	private UpdateResult addUserGroup(ObjectId userId, MessageGroup_User messageGroup_User) {
+		Query query = new Query(Criteria.where("_id").is(userId));
+		Update update = new Update();
+		update.push("List_message_group", messageGroup_User);
+		return mongoTemplate.updateFirst(query, update, Users.class);
+	}
 }

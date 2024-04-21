@@ -21,21 +21,22 @@ public class SocketService {
 	private SimpMessagingTemplate simpMessagingTemplate;
 	public static Map<String, List<String>> groupMembers = new HashMap<>();
 
-	public void addUserToGroup(String username, String groupName) {
-		groupMembers.computeIfAbsent(groupName, k -> new ArrayList<>()).add(username);
+	public static void addUserToGroup(String userId, String groupId) {
+		if(!groupMembers.containsKey(groupId)) {
+            List<String> userList = new ArrayList<>();
+            userList.add(userId);
+            groupMembers.put(groupId, userList);
+		}
+		else {
+        	if(!groupMembers.get(groupId).contains(userId))
+        		groupMembers.get(groupId).add(userId);
+        }
 	}
 	//only call in message group service when get all the message groups of user, CompletableFuture is for async, response doesn't need to wait for this
 	public static CompletableFuture<Void> initUserConnectAsync(String userId, List<UserGroupDto> messageGroupIds) {
 	    return CompletableFuture.runAsync(() -> {
 	        for(UserGroupDto msg : messageGroupIds) {
-	            if(!groupMembers.containsKey(msg.MessageGroupId)) {
-	                List<String> userList = new ArrayList<>();
-	                userList.add(userId);
-	                groupMembers.put(msg.MessageGroupId, userList);
-	            } else {
-	            	if(!groupMembers.get(msg.MessageGroupId).contains(userId))
-	            		groupMembers.get(msg.MessageGroupId).add(userId);
-	            }
+	        	addUserToGroup(userId, msg.MessageGroupId);
 	        }
 	    });
 
@@ -44,7 +45,7 @@ public class SocketService {
 		List<String> memberId = groupMembers.get(groupId);
         if (memberId != null) {
             for (String id : memberId) {
-                // Send message to each member of the group
+                // Send message to each member in group
             	simpMessagingTemplate.convertAndSendToUser(id, "/message_group", message);
             }
         }
@@ -52,6 +53,9 @@ public class SocketService {
 	public void sendPrivateMessage(String senderId, String receiverId, Messages messageSender, Messages messageReceiver) {
 		simpMessagingTemplate.convertAndSendToUser(senderId, "/message", messageSender);
 		simpMessagingTemplate.convertAndSendToUser(receiverId, "/message", messageReceiver);
+	}
+	public void sendNotifyToUser(String userId, String notify) {
+		simpMessagingTemplate.convertAndSendToUser(userId, "/notify", notify);
 	}
 	public void sendErrorToUser(String userId) {
 		simpMessagingTemplate.convertAndSendToUser(userId, "/error", "Something mighr wrong, error occur");
