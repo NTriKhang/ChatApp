@@ -12,7 +12,7 @@ import {
 import axios from "axios";
 import moment from "moment";
 import SearchBar from "./SearchBar";
-
+import userByTag from "../hooks/userByTag";
 import { useUpdateUser } from "../hooks/useUpdateUser";
 import { useUploadImageUser } from "../hooks/useUploadImageUser";
 import { useUploadBackgroundImageUser } from "../hooks/useUploadBackgroundImageUser";
@@ -32,6 +32,10 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
   const { mutateAsync: updateUser } = useUpdateUser();
   const { mutateAsync: uploadImage } = useUploadImageUser();
   const { mutateAsync: uploadBackground } = useUploadBackgroundImageUser();
+  
+  const [searchTerm, setSearchTerm] = useState("");
+  const { users, loading } = userByTag(searchTerm);
+  const [showUserInfo, setShowUserInfo] = useState(false);
 
   // gọi hàm "refetch" phía trên để call lại api
 
@@ -117,10 +121,16 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
     }
   };
 
-  const handleSearch = (searchTerm) => {
-    console.log("Search term:", searchTerm);
+  const handleSearch = (term) => {
+    setSearchTerm(term);
   };
-
+  const handleMouseLeave = () => {
+    setShowUserInfo(false);
+  };
+  const handleMouseEnter = () => {
+    setShowUserInfo(true);
+  };
+  
   return (
     <>
       <Container>
@@ -128,8 +138,24 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
           <img src={Logo} alt="logo" />
           <h3>App chat</h3>
         </div>
-        <SearchBar onSearch={handleSearch} />{" "}
+        <SearchBar onSearch={handleSearch}   onMouseLeave={handleMouseLeave}/>{" "}
         {/* Insert the SearchBar component here */}
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <UserInfoBox show={showUserInfo} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+            <ul>
+              {users.map((user) => (
+                <li key={user._id}>
+                  <div className="avatar">
+                    <img src={user.Image_path} alt={user.Display_name} />
+                  </div>
+                  <div className="username">{user.Tag}</div>
+                </li>
+              ))}
+            </ul>
+          </UserInfoBox>
+        )}
         <div className="contacts">
           {messageGroup?.map((contact, index) => (
             <div
@@ -387,6 +413,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
   );
 }
 
+
 const Container = styled.div`
   position: relative;
   display: flex;
@@ -508,3 +535,47 @@ const Container = styled.div`
     }
   }
 `;
+const UserInfoBox = styled.div`
+  position: absolute;
+  top: 130px;
+  left: 10px;
+  width: 85%;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  z-index: 999;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 10px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+`;
+
+
