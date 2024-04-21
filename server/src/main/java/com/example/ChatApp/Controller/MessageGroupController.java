@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,6 +27,8 @@ import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Repositories.MessageGroupsRepository;
 import com.example.ChatApp.Services.MessageGroupService;
 import com.example.ChatApp.Services.MessageService;
+import com.example.ChatApp.Services.SocketService;
+import com.example.ChatApp.SocketDto.CreateGroupDTO;
 import com.example.ChatApp.dto.ImageStringDto;
 import com.example.ChatApp.dto.MessageGroupUpdateDto;
 import com.example.ChatApp.dto.UserGroupDto;
@@ -36,6 +41,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class MessageGroupController {
 	@Autowired
 	private MessageGroupService messageGroupService;
+	@Autowired 
+	private SocketService socketService;
 
 	/*
 	 * @Autowired private MessageGroupsRepository messageGroupsRepository;
@@ -75,5 +82,29 @@ public class MessageGroupController {
 			return new ResponseEntity<>(HttpStatus.OK);
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
+	}
+
+	@MessageMapping("/CreateGroup")
+	public ResponseEntity<?> CreateGroupMessages(@Payload CreateGroupDTO createGroupRequest) {
+		try {
+			Message_groups result = messageGroupService.create_GroupString(createGroupRequest);
+			if(result == null) {
+				socketService.sendErrorToUser(createGroupRequest.userCreatedId);
+			}
+			else {
+				SocketService.addUserToGroup(createGroupRequest.userCreatedId, result._id);
+				socketService.sendNotifyToUser(createGroupRequest.userCreatedId, "create group successfully");
+				for (ObjectId userId : createGroupRequest.userList) {
+					SocketService.addUserToGroup(userId.toString(), result._id);
+					socketService.sendNotifyToUser(userId.toString(), "you're added to a group");
+
+				}
+			}
+			return new ResponseEntity<>( HttpStatus.OK);
+		} catch (Exception e) {
+			System.out.println("Exception: " + e.getMessage());
+			return new ResponseEntity<>("ERROR", HttpStatus.BAD_REQUEST);
+		}
+		
 	}
 }

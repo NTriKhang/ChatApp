@@ -13,12 +13,12 @@ public class MessageGroup_User {
 	public MessageGroup_User() {
 		
 	}
-	public MessageGroup_User(String messageGroupId, boolean isRead, String role, String reeciverId) {
+	public MessageGroup_User(String messageGroupId, boolean isRead, String role, String receiverId) {
 		super();
 		this.messageGroupId = messageGroupId;
 		this.isRead = isRead;
 		this.role = role;
-		this.receiverId = reeciverId;
+		this.receiverId = receiverId;
 	}
 	
 }
