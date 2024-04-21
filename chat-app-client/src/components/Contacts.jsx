@@ -35,7 +35,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
   
   const [searchTerm, setSearchTerm] = useState("");
   const { users, loading } = userByTag(searchTerm);
-  const [showUserInfo, setShowUserInfo] = useState(false);
+  const [showUserInfo, setShowUserInfo] = useState(true);
 
   // gọi hàm "refetch" phía trên để call lại api
 
@@ -122,15 +122,10 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
   };
 
   const handleSearch = (term) => {
+    setShowUserInfo(term.length !== 0);
     setSearchTerm(term);
   };
-  const handleMouseLeave = () => {
-    setShowUserInfo(false);
-  };
-  const handleMouseEnter = () => {
-    setShowUserInfo(true);
-  };
-  
+
   return (
     <>
       <Container>
@@ -138,12 +133,10 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
           <img src={Logo} alt="logo" />
           <h3>App chat</h3>
         </div>
-        <SearchBar onSearch={handleSearch}   onMouseLeave={handleMouseLeave}/>{" "}
+        <SearchBar onSearch={handleSearch}/>{" "}
         {/* Insert the SearchBar component here */}
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <UserInfoBox show={showUserInfo} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        {showUserInfo && !loading && (
+          <UserInfoBox>
             <ul>
               {users.map((user) => (
                 <li key={user._id}>
@@ -545,6 +538,7 @@ const UserInfoBox = styled.div`
   border-radius: 5px;
   z-index: 999;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  
 
   .avatar {
     width: 40px;
