@@ -35,8 +35,8 @@ const ChatPage = () => {
     stompClient.subscribe('/user' + userId + '/notify', onNotify)
   }
   const onNotify = (payload) => {
-    console.log("On socket response ", payloads)
-  }
+    console.log("On socket response ", payload)
+}
   const onMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
     console.log("On socket response ", payloadData)
