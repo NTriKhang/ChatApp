@@ -23,12 +23,13 @@ export default function Contacts({ changeChat, messageGroup }) {
   const [isModalOpenAvatar, setIsModalOpenAvatar] = useState(false);
   const [isModalOpenBackground, setIsModalOpenBackground] = useState(false);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
+  const [isModalAddGroupOpen, setIsModalAddGroupOpen] = useState(false);
   const [titleChat, setTitleChat] = useState("");
   const currentUser = getCurrentUserLocal();
 
   const [currentUserImage, setCurrentUserImage] = useState("");
   const [currentSelected, setCurrentSelected] = useState(null);
-  
+
   const { mutateAsync: updateUser } = useUpdateUser();
   const { mutateAsync: uploadImage } = useUploadImageUser();
   const { mutateAsync: uploadBackground } = useUploadBackgroundImageUser();
@@ -36,11 +37,14 @@ export default function Contacts({ changeChat, messageGroup }) {
   // gọi hàm "refetch" phía trên để call lại api
 
   const changeCurrentChat = (contact, index) => {
-    setTitleChat({contact, index});
+    setTitleChat({ contact, index });
   };
 
   useEffect(() => {
-    changeChat({...titleChat?.contact, Message_group_name: messageGroup?.[titleChat?.index]?.Message_group_name});
+    changeChat({
+      ...titleChat?.contact,
+      Message_group_name: messageGroup?.[titleChat?.index]?.Message_group_name,
+    });
   }, [titleChat, messageGroup]);
 
   const handleCancel = () => {
@@ -56,11 +60,16 @@ export default function Contacts({ changeChat, messageGroup }) {
   };
 
   const initialValues = {
-    DisplayName: currentUser.Display_name,
-    Email: currentUser.Email,
-    Tag: currentUser.Tag,
-    Id: currentUser._id,
-    Birth: moment(currentUser.Birth, "YYYY-MM-DD"),
+    DisplayName: currentUser?.Display_name,
+    Email: currentUser?.Email,
+    Tag: currentUser?.Tag,
+    Id: currentUser?._id,
+    Birth: moment(currentUser?.Birth, "YYYY-MM-DD"),
+  };
+
+  const onFinishAddGroup = async (values) => {
+    //handle add group this here
+    console.log("handle add group this here");
   };
 
   const onFinish = async (values) => {
@@ -119,9 +128,17 @@ export default function Contacts({ changeChat, messageGroup }) {
   return (
     <>
       <Container>
-        <div className="brand bg">
-          <img src={Logo} alt="logo" />
-          <h3>App chat</h3>
+        <div className="brand bg flex justify-between w-full">
+          <div className="flex">
+            <img src={Logo} alt="logo" />
+            <h3>App chat</h3>
+          </div>
+          <div
+            className="cursor-pointer"
+            onClick={() => setIsModalAddGroupOpen(true)}
+          >
+            <span class="material-symbols-outlined text-white">group_add</span>
+          </div>
         </div>
         <SearchBar onSearch={handleSearch} />{" "}
         {/* Insert the SearchBar component here */}
@@ -166,9 +183,9 @@ export default function Contacts({ changeChat, messageGroup }) {
             <div className="flex flex-column items-center">
               <div className="avatar">
                 {currentUserImage ? (
-                  <img src={currentUser.Image_path} alt="avatar" />
+                  <img src={currentUser?.Image_path} alt="avatar" />
                 ) : (
-                  <img src={currentUser.Image_path} alt="avatar" />
+                  <img src={currentUser?.Image_path} alt="avatar" />
                 )}
               </div>
               <div className="username">
@@ -203,7 +220,7 @@ export default function Contacts({ changeChat, messageGroup }) {
                   <div
                     className="px-4 py-5 sm:px-6"
                     style={{
-                      backgroundImage: `url(${currentUser.Background_image_path})`,
+                      backgroundImage: `url(${currentUser?.Background_image_path})`,
                       backgroundRepeat: "no-repeat",
                       backgroundSize: "cover",
                     }}
@@ -232,10 +249,10 @@ export default function Contacts({ changeChat, messageGroup }) {
                       <UploadImage onChangeImage={onUpdateImage} />
                     </Modal>
                     <h3 className="text-lg leading-6 font-medium text-white">
-                      {currentUser.Display_name}
+                      {currentUser?.Display_name}
                     </h3>
                     <p className="mt-1 max-w-2xl text-sm text-white">
-                      {currentUser.Email}
+                      {currentUser?.Email}
                     </p>
                     <span
                       class="material-symbols-outlined cursor-pointer "
@@ -263,7 +280,7 @@ export default function Contacts({ changeChat, messageGroup }) {
                           Tên
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                          {currentUser.Display_name}
+                          {currentUser?.Display_name}
                         </dd>
                       </div>
                       <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -271,7 +288,7 @@ export default function Contacts({ changeChat, messageGroup }) {
                           Email
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                          {currentUser.Email}
+                          {currentUser?.Email}
                         </dd>
                       </div>
                       <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -378,6 +395,41 @@ export default function Contacts({ changeChat, messageGroup }) {
           </Form>
         </div>
       </Modal>
+
+      <Modal
+        title="Tạo Group mới"
+        open={isModalAddGroupOpen}
+        cancelText="Lưu"
+        okButtonProps={{ hidden: true }}
+        cancelButtonProps={{ hidden: true }}
+        onCancel={() => setIsModalAddGroupOpen(false)}
+      >
+        <div className="bg-white overflow-hidden rounded-lg mt-4">
+          <Form
+            name="basic"
+            onFinish={onFinishAddGroup}
+            labelCol={{ span: 4 }}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
+          >
+            <Form.Item
+              name="Groupname"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập tên!",
+                },
+              ]}
+            >
+              <Input placeholder="Nhập tên group" />
+            </Form.Item>
+
+            <Form.Item className="flex justify-center">
+              <Button htmlType="submit">Tạo</Button>
+            </Form.Item>
+          </Form>
+        </div>
+      </Modal>
     </>
   );
 }
@@ -389,7 +441,6 @@ const Container = styled.div`
 
   .brand {
     display: flex;
-    justify-content: center;
     align-items: center;
     padding: 20px;
     background-color: #302b63;

@@ -20,35 +20,42 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
 
   const sendChat = (event) => {
     event.preventDefault();
-    
+
     // console.log(stompClient)
     // console.log(currentChat.MessageGroupId)
     var currentUser = getCurrentUserLocal();
-    console.log(currentChat)
+
     if (msg.length > 0) {
-      if(currentChat.Message_group_type === 'Group'){
+      if (currentChat.Message_group_type === "Group") {
         let messageTextDto = {
-          Content : msg,
+          Content: msg,
           Message_group_id: currentChat.MessageGroupId,
           Sender_user: {
             user_id: currentUser._id,
-            user_name: currentUser.Display_name
-          }
-        }
-        stompClient.send("/app/sendMessage", {}, JSON.stringify(messageTextDto))
+            user_name: currentUser.Display_name,
+          },
+        };
+        stompClient.send(
+          "/app/sendMessage",
+          {},
+          JSON.stringify(messageTextDto)
+        );
         //console.log(messageTextDto)
-      }
-      else{
+      } else {
         let messageTextIndDto = {
           Content: msg,
           SenderName: currentUser.Display_name,
           SenderId: currentUser._id,
           MsgGroupSenderId: currentChat.MessageGroupId,
-          ReceiverId: currentChat.ReceiverId
-        }
-        stompClient.send("/app/sendIndMessage", {}, JSON.stringify(messageTextIndDto))
+          ReceiverId: currentChat.ReceiverId,
+        };
+        stompClient.send(
+          "/app/sendIndMessage",
+          {},
+          JSON.stringify(messageTextIndDto)
+        );
       }
-      setMsg(""); 
+      setMsg("");
     }
   };
 
@@ -79,12 +86,12 @@ const Container = styled.div`
   display: grid;
   align-items: center;
   grid-template-columns: 5% 95%;
-  background-color: #333; 
-  position: relative; 
+  background-color: #333;
+  position: relative;
   padding-right: 4rem;
-  padding: 0.5rem; 
-  border-radius: 2rem; 
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
+  padding: 0.5rem;
+  border-radius: 2rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   @media screen and (min-width: 720px) and (max-width: 1080px) {
     padding: 0 1rem;
     gap: 1rem;
@@ -98,8 +105,8 @@ const Container = styled.div`
       position: relative;
       svg {
         cursor: pointer;
-        font-size: 2rem; 
-        margin: 0 0.5rem; 
+        font-size: 2rem;
+        margin: 0 0.5rem;
         color: #ffc107;
       }
       .emoji-picker-react {
@@ -143,7 +150,7 @@ const Container = styled.div`
       width: 90%;
       height: 2.5rem;
       color: black;
-      padding-left:1rem;
+      padding-left: 1rem;
       border: none;
       margin-left: 0.5rem;
       font-size: 1.2rem;
@@ -156,13 +163,13 @@ const Container = styled.div`
       }
     }
     button {
-      border-radius: 50px; 
+      border-radius: 50px;
       width: 4rem;
       height: 3rem;
       right: -2rem;
       padding: 0.5rem;
       display: flex;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       justify-content: center;
       align-items: center;
       background-color: #9a86f3;
@@ -179,13 +186,11 @@ const Container = styled.div`
         cursor: pointer;
       }
       &:focus {
-        outline: none; 
+        outline: none;
       }
       &:hover {
-        background-color: #a99ee3; 
+        background-color: #a99ee3;
       }
     }
   }
 `;
-
-
