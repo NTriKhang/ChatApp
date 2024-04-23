@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Image, Form, Input, Checkbox, Button, DatePicker } from "antd";
+import {
+  Modal,
+  Image,
+  Form,
+  Input,
+  Checkbox,
+  Button,
+  DatePicker,
+  Select,
+  Space,
+} from "antd";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
 
@@ -17,34 +27,42 @@ import { useUpdateUser } from "../hooks/useUpdateUser";
 import { useUploadImageUser } from "../hooks/useUploadImageUser";
 import { useUploadBackgroundImageUser } from "../hooks/useUploadBackgroundImageUser";
 import { UploadImage } from "./upload/UploadImage";
+import { useGetUserByTag } from "../hooks/useGetUserByTag";
+import { AddGroup, AddGroupModal } from "./modal/AddGroupModal";
+import { UpdateUserModal } from "./modal/UpdateUserModal";
 
-export default function Contacts({ changeChat, messageGroup, currentChat }) {
+export default function Contacts({ changeChat, messageGroup, currentChat, stompClient }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenAvatar, setIsModalOpenAvatar] = useState(false);
   const [isModalOpenBackground, setIsModalOpenBackground] = useState(false);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
+  const [isModalAddGroupOpen, setIsModalAddGroupOpen] = useState(false);
+
   const [titleChat, setTitleChat] = useState("");
   const currentUser = getCurrentUserLocal();
 
   const [currentUserImage, setCurrentUserImage] = useState("");
   const [currentSelected, setCurrentSelected] = useState(null);
-  
-  const { mutateAsync: updateUser } = useUpdateUser();
+
   const { mutateAsync: uploadImage } = useUploadImageUser();
   const { mutateAsync: uploadBackground } = useUploadBackgroundImageUser();
 
   // gọi hàm "refetch" phía trên để call lại api
 
   const changeCurrentChat = (contact, index) => {
-    changeChat(index, contact)
-    setTitleChat({contact, index});
+    changeChat(index, contact);
+    setTitleChat({ contact, index });
   };
 
   useEffect(() => {
-    console.log('log msg in contact', currentChat)
-    if(currentChat !== null){
-      console.log('right')
-      changeChat(0,{...titleChat?.contact, Message_group_name: messageGroup?.[titleChat?.index]?.Message_group_name});
+    console.log("log msg in contact", currentChat);
+    if (currentChat !== null) {
+      console.log("right");
+      changeChat(0, {
+        ...titleChat?.contact,
+        Message_group_name:
+          messageGroup?.[titleChat?.index]?.Message_group_name,
+      });
     }
   }, [titleChat, messageGroup]);
 
@@ -54,41 +72,6 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
 
   const handleEdit = () => {
     setIsModalUpdateOpen(true);
-  };
-
-  const handleUpdate = () => {
-    setIsModalUpdateOpen(false);
-  };
-
-  const initialValues = {
-    DisplayName: currentUser.Display_name,
-    Email: currentUser.Email,
-    Tag: currentUser.Tag,
-    Id: currentUser._id,
-    Birth: moment(currentUser.Birth, "YYYY-MM-DD"),
-  };
-
-  const onFinish = async (values) => {
-    const res = await updateUser({
-      ...values,
-      Id: currentUser._id,
-      Birth: moment(values.Birth),
-    });
-
-    if (!res) return;
-
-    setCurrentUserLocal({
-      ...currentUser,
-      Display_name: values.DisplayName,
-      Email: values.Email,
-      Tag: values.Tag,
-      Birth: values.Birth,
-    });
-    setIsModalUpdateOpen(false);
-  };
-
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
   };
 
   const onUpdateImage = async (values) => {
@@ -124,9 +107,17 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
   return (
     <>
       <Container>
-        <div className="brand bg">
-          <img src={Logo} alt="logo" />
-          <h3>App chat</h3>
+        <div className="brand bg flex justify-between w-full">
+          <div className="flex">
+            <img src={Logo} alt="logo" />
+            <h3>App chat</h3>
+          </div>
+          <div
+            className="cursor-pointer"
+            onClick={() => setIsModalAddGroupOpen(true)}
+          >
+            <span class="material-symbols-outlined text-white">group_add</span>
+          </div>
         </div>
         <SearchBar onSearch={handleSearch} />{" "}
         {/* Insert the SearchBar component here */}
@@ -303,86 +294,16 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
           </div>
         </div>
       </Container>
-      <Modal
-        title="cập nhật thông tin"
-        open={isModalUpdateOpen}
-        cancelText="Lưu"
-        okButtonProps={{ hidden: true }}
-        cancelButtonProps={{ hidden: true }}
-        onCancel={handleUpdate}
-      >
-        <div className="bg-white overflow-hidden rounded-lg mt-4">
-          <Form
-            initialValues={initialValues}
-            name="basic"
-            onFinish={onFinish}
-            labelCol={{ span: 4 }}
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
-          >
-            <Form.Item
-              label="Tên"
-              name="DisplayName"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập tên!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Email"
-              name="Email"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập Email!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Tag"
-              name="Tag"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập Tag!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Ngày sinh"
-              name="Birth"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập ngày sinh!",
-                },
-              ]}
-            >
-              <DatePicker />
-            </Form.Item>
-
-            <Form.Item
-              wrapperCol={{
-                offset: 8,
-                span: 16,
-              }}
-            >
-              <Button htmlType="submit">Cập nhật</Button>
-            </Form.Item>
-          </Form>
-        </div>
-      </Modal>
+      <UpdateUserModal
+        isShow={isModalUpdateOpen}
+        onCancel={() => setIsModalUpdateOpen(false)}
+        currentUser={currentUser}
+      />
+      <AddGroupModal
+        stompClient={stompClient}
+        isShow={isModalAddGroupOpen}
+        onCancel={() => setIsModalAddGroupOpen(false)}
+      />
     </>
   );
 }
@@ -395,7 +316,6 @@ const Container = styled.div`
 
   .brand {
     display: flex;
-    justify-content: center;
     align-items: center;
     padding: 20px;
     background-color: #302b63;
@@ -411,12 +331,12 @@ const Container = styled.div`
   }
 
   .contacts {
-    overflow-y: auto; 
+    overflow-y: auto;
     padding: 20px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
-    max-height: 70vh; 
+    max-height: 70vh;
     margin-bottom: 10px;
     &::-webkit-scrollbar {
       width: 5px;
@@ -425,7 +345,7 @@ const Container = styled.div`
       background: #5d5d5d;
     }
     .contact {
-      flex-grow: 1; 
+      flex-grow: 1;
       display: flex;
       align-items: center;
       background-color: #222034;
@@ -466,7 +386,7 @@ const Container = styled.div`
   }
 
   .current-user {
-    position: absolute ;
+    position: absolute;
     bottom: 0;
     left: 0; /* Đảm bảo phần tử nằm ở mép trái của màn hình */
     width: 100%; /* Phủ toàn bộ chiều rộng của màn hình */
@@ -480,7 +400,7 @@ const Container = styled.div`
       border-radius: 50%;
       width: 50px;
       height: 50px;
-      max-width:200px !important;
+      max-width: 200px !important;
     }
     .username h2 {
       margin-left: 15px;

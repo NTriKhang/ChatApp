@@ -92,11 +92,13 @@ public class MessageGroupController {
 				socketService.sendErrorToUser(createGroupRequest.userCreatedId);
 			}
 			else {
+				
 				SocketService.addUserToGroup(createGroupRequest.userCreatedId, result._id);
-				socketService.sendNotifyToUser(createGroupRequest.userCreatedId, "create group successfully");
+				socketService.sendNotifyToUser(createGroupRequest.userCreatedId, result);
+				
 				for (ObjectId userId : createGroupRequest.userList) {
-					SocketService.addUserToGroup(userId.toString(), result._id);
-					socketService.sendNotifyToUser(userId.toString(), "you're added to a group");
+					SocketService.addUserToGroup(userId.toString() , result._id);
+					socketService.sendNotifyToUser(userId.toString(), result);
 
 				}
 			}

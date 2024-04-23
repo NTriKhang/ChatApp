@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Models.Messages;
 import com.example.ChatApp.SocketDto.MessageTextDto;
 import com.example.ChatApp.dto.UserGroupDto;
@@ -54,8 +55,8 @@ public class SocketService {
 		simpMessagingTemplate.convertAndSendToUser(senderId, "/message", messageSender);
 		simpMessagingTemplate.convertAndSendToUser(receiverId, "/message", messageReceiver);
 	}
-	public void sendNotifyToUser(String userId, String notify) {
-		simpMessagingTemplate.convertAndSendToUser(userId, "/notify", notify);
+	public void sendNotifyToUser(String userId, Message_groups group) {
+		simpMessagingTemplate.convertAndSendToUser(userId, "/notify", group);
 	}
 	public void sendErrorToUser(String userId) {
 		simpMessagingTemplate.convertAndSendToUser(userId, "/error", "Something mighr wrong, error occur");
