@@ -13,3 +13,4 @@ export const sendMessageRoute = `${host}/api/messages/addmsg`;
 export const recieveMessageRoute = `${host}/api/messages/getmsg`;
 export const setAvatarRoute = `${host}/api/auth/setavatar`;
 export const getMessGroup = `${host}/message_group`;
+export const getUsersByTag = (tag) =>`${host}/user/findUser/${tag}`;
