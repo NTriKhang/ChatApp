@@ -2,8 +2,9 @@ import { Button, Form, Image, Input, Modal, Select, Space } from "antd";
 import { useState, useEffect } from "react";
 import { useGetUserByTag } from "../../hooks/useGetUserByTag";
 import { debounce } from "lodash";
+import { getCurrentUserLocal } from "../../utils/LocalStorage";
 
-const AddGroupModal = ({ isShow, onCancel }) => {
+const AddGroupModal = ({ isShow, onCancel, stompClient }) => {
   const [search, setSearch] = useState("");
   const [listOptions, setListOptions] = useState([]);
 
@@ -30,9 +31,27 @@ const AddGroupModal = ({ isShow, onCancel }) => {
     setSearch(value);
   }, 300);
 
+  function count(arr) {
+    let count = 0;
+    for (let i = 0; i < arr.length; i++) {
+        count++;
+    }
+    return count;
+}
   const onFinishAddGroup = async (values) => {
-    //handle add group this here
-    console.log("handle add group this here");
+    if(values.userList.length < 2){
+      alert('at least two users chosen')
+    }
+    else{
+      let createGroupRequest = {
+        userCreatedId: getCurrentUserLocal()['_id'],
+        groupName: values.groupName,
+        userList: values.userList
+      }
+      stompClient.send("/app/CreateGroup", {}, JSON.stringify(createGroupRequest))
+      oncancel()
+    }
+
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -55,7 +74,7 @@ const AddGroupModal = ({ isShow, onCancel }) => {
           autoComplete="off"
         >
           <Form.Item
-            name="Groupname"
+            name="groupName"
             rules={[
               {
                 required: true,
@@ -67,7 +86,7 @@ const AddGroupModal = ({ isShow, onCancel }) => {
           </Form.Item>
 
           <Form.Item
-            name="Users"
+            name="userList"
             label={<div>Add user</div>}
             rules={[
               {

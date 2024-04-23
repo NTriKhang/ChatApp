@@ -31,7 +31,7 @@ import { useGetUserByTag } from "../hooks/useGetUserByTag";
 import { AddGroup, AddGroupModal } from "./modal/AddGroupModal";
 import { UpdateUserModal } from "./modal/UpdateUserModal";
 
-export default function Contacts({ changeChat, messageGroup, currentChat }) {
+export default function Contacts({ changeChat, messageGroup, currentChat, stompClient }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenAvatar, setIsModalOpenAvatar] = useState(false);
   const [isModalOpenBackground, setIsModalOpenBackground] = useState(false);
@@ -300,6 +300,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat }) {
         currentUser={currentUser}
       />
       <AddGroupModal
+        stompClient={stompClient}
         isShow={isModalAddGroupOpen}
         onCancel={() => setIsModalAddGroupOpen(false)}
       />
