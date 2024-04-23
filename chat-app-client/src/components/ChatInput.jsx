@@ -9,6 +9,7 @@ import { getCurrentUserLocal } from "../utils/LocalStorage";
 export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
   const [msg, setMsg] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [images, setImages] = useState([]);
   const handleEmojiPickerhideShow = () => {
     setShowEmojiPicker(!showEmojiPicker);
   };
@@ -51,15 +52,25 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
       }
       setMsg("");
     }
+    if (images.length > 0) {
+      for (let i = 0; i < images.length; i++) {
+        console.log("Image", i+1, ":", images[i]);
+      }
+      setImages([]);
+    }
   };
 
   const handleImageUploadChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      console.log(file.size);
-      setMsg(file.name);
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      setImages(files);
+      let imageNames = "";
+      for (let i = 0; i < files.length; i++) {
+        imageNames += files[i].name + ", ";
+      }
+      setMsg(imageNames);
     }
-  };
+};
   const handleFileUploadClick = () => {
     const imageUpload = document.getElementById('imageUpload');
     if (imageUpload) {
@@ -75,7 +86,7 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
           {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick} />}
         </div>
         <div className="upload-image">
-          <input type="file" id="imageUpload" onChange={handleImageUploadChange} />
+        <input type="file" id="imageUpload" onChange={handleImageUploadChange} multiple />
           <FiImage onClick={handleFileUploadClick} />
         </div>
       </div>
