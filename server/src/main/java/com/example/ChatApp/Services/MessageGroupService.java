@@ -23,9 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.ChatApp.Config.Utility;
 import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Models.Users;
+import com.example.ChatApp.Models.Submodels.LastMessage_MsgGroup;
 import com.example.ChatApp.Models.Submodels.MessageGroup_User;
 import com.example.ChatApp.Repositories.MessageGroupsRepository;
 import com.example.ChatApp.Repositories.UsersRepository;
+import com.example.ChatApp.SocketDto.CreateGroupDTO;
 import com.example.ChatApp.dto.MessageGroupUpdateDto;
 import com.example.ChatApp.dto.UserGroupDto;
 import com.mongodb.client.result.UpdateResult;
@@ -120,5 +122,35 @@ public class MessageGroupService {
 		UpdateResult result = mongoTemplate.updateFirst(query, update, Message_groups.class);
 		return result;
 
+	}
+	
+	public Message_groups create_GroupString(CreateGroupDTO request) {
+		ObjectId createdUserId = new ObjectId(request.userCreatedId);
+		
+		Message_groups newGroup;
+
+		newGroup = new Message_groups(request.groupName, "", new LastMessage_MsgGroup(), Utility.MsgGroupType.Group);
+
+		Message_groups savedGroup = messageGroupsRepository.save(newGroup);
+		
+		List<ObjectId> userList = request.userList;
+		
+	 	UpdateResult result = addUserGroup(createdUserId, new MessageGroup_User(savedGroup._id, true, Utility.Role.Admin, null));
+		if(!result.wasAcknowledged())
+			return null;
+
+		// list user 
+		for (ObjectId userId : userList) {
+			result = addUserGroup(userId, new MessageGroup_User(savedGroup._id, true, Utility.Role.Participant, null));
+			if(!result.wasAcknowledged())
+				return null;
+		}
+		return savedGroup;
+	}
+	private UpdateResult addUserGroup(ObjectId userId, MessageGroup_User messageGroup_User) {
+		Query query = new Query(Criteria.where("_id").is(userId));
+		Update update = new Update();
+		update.push("List_message_group", messageGroup_User);
+		return mongoTemplate.updateFirst(query, update, Users.class);
 	}
 }
