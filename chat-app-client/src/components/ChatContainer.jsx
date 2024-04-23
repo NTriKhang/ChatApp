@@ -7,32 +7,30 @@ import ChatInput from "./ChatInput";
 import { getCurrentUserLocal } from "../utils/LocalStorage";
 import UpdateNameMG from "./UpdateNameMG";
 import UploadImages from "./UploadImages";
+import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
+import { BsClipboardPlusFill } from "react-icons/bs";
 
+let currentPage = 1
+let reachedEnd = false;
 export default function ChatContainer({
   currentChat,
-  onSave,
   stompClient,
-  messagePayload,
-  messageGroup,
+  onSave,
+  messagePayload
 }) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
   const [chat, setChat] = useState(currentChat);
   const { MessageGroupId, Message_group_name, Message_group_image } =
     currentChat;
-  const currentPage = useRef(1);
-  const [loading, setLoading] = useState(false);
-  const [reachedEnd, setReachedEnd] = useState(false);
-  const [initialLoad, setInitialLoad] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const lastFetchLength = useRef(0);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImageDialog, setShowImageDialog] = useState(false);
 
-  console.log("current chat", currentChat)
-  
   const fetchMessages = async (page) => {
     try {
+      console.log(currentChat)
       const response = await axios.get(
         `http://localhost:8080/api/v1/messages/${MessageGroupId}?page=${page}`,
         {
@@ -53,44 +51,38 @@ export default function ChatContainer({
   };
 
   const fetchMoreMessages = async () => {
-    if (loading || reachedEnd) return;
+    if (reachedEnd) return;
 
     try {
-      setLoading(true);
 
-      let oldScrollHeight = scrollRef.current.scrollHeight;
-      let newMessages = [];
-      let nextPage = currentPage.current + 1;
-      currentPage.current = nextPage;
+
+      let nextPage = currentPage + 1;
+      currentPage = nextPage;
       if (lastFetchLength.current > 0 && lastFetchLength.current < 20) {
-        setReachedEnd(true);
-        setLoading(false);
         return;
       }
-      newMessages = await fetchMessages(nextPage);
+      let newMessages = await fetchMessages(nextPage);
 
       if (newMessages.length > 0) {
         setMessages((prevMessages) => [...prevMessages, ...newMessages]);
         lastFetchLength.current = newMessages.length;
 
         if (newMessages.length < 20) {
-          setReachedEnd(true);
+          reachedEnd = true
         }
 
-        if (newMessages.length >= 20) {
-          scrollRef.current.scrollTop =
-            scrollRef.current.scrollHeight - oldScrollHeight;
-        }
+        // if (newMessages.length >= 20) {
+        //   scrollRef.current.scrollTop =
+        //     scrollRef.current.scrollHeight - oldScrollHeight + 300;
+        // }
       } else {
         if (lastFetchLength.current < 20) {
-          setReachedEnd(true);
+          reachedEnd = true
         }
       }
 
-      setLoading(false);
     } catch (error) {
       console.log(`Failed to fetch messages: ${error.message}`);
-      setLoading(false);
     }
   };
   const handleCloseEditDialog = () => {
@@ -115,11 +107,14 @@ export default function ChatContainer({
   const closeImageDialog = () => {
     setShowImageDialog(false);
   };
+
   useEffect(() => {
+    currentPage = 1
+    reachedEnd = false;
     const handleScroll = (e) => {
       const { scrollTop } = e.currentTarget;
       if (scrollTop === 0 && !isScrolled && !reachedEnd) {
-        fetchMoreMessages();
+        fetchMoreMessages()
       }
       setIsScrolled(scrollTop > 0);
     };
@@ -133,23 +128,20 @@ export default function ChatContainer({
         scrollRef.current.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [isScrolled, reachedEnd]);
+  }, [currentChat]);
 
   useEffect(() => {
-    if (
-      (initialLoad && isScrolled && !reachedEnd) ||
-      (lastFetchLength.current < 20 && !reachedEnd)
-    ) {
-      scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
-  }, [initialLoad, isScrolled, reachedEnd]);
-
+    console.log('new message');
+    scrollRef.current?.scrollIntoView();
+  }, [messages])
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const initialMessages = await fetchMessages(currentPage.current);
+
+        const initialMessages = await fetchMessages(currentPage);
         setMessages(initialMessages);
-        setInitialLoad(true);
+
       } catch (error) {
         console.error("Lỗi khi tải tin nhắn:", error);
       }
@@ -286,7 +278,7 @@ const Container = styled.div`
     padding: 1rem 2rem;
     background-color: rgb(48, 43, 99);
     color: white;
-    height: 12%;
+    height: 70px;
 
     .user-details {
       display: flex;
@@ -330,9 +322,9 @@ const Container = styled.div`
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow-y: auto; 
+    max-height: 530px;
 
-    overflow-y: auto;
-    max-height: calc(100vh - 200px);
 
     .message {
       position: relative;
@@ -385,7 +377,7 @@ const Modal = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index:999;
 `;
 
 const ModalContent = styled.div`

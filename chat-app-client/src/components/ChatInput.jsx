@@ -3,11 +3,13 @@ import { BsEmojiSmileFill } from "react-icons/bs";
 import { IoMdSend } from "react-icons/io";
 import styled from "styled-components";
 import Picker from "emoji-picker-react";
+import { FiImage } from "react-icons/fi";
 import { getCurrentUserLocal } from "../utils/LocalStorage";
 
 export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
   const [msg, setMsg] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [images, setImages] = useState([]);
   const handleEmojiPickerhideShow = () => {
     setShowEmojiPicker(!showEmojiPicker);
   };
@@ -26,7 +28,7 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
     var currentUser = getCurrentUserLocal();
 
     if (msg.length > 0) {
-      if (currentChat.Message_group_type === "Group") {
+      if (currentChat.Message_group_type === 'Group') {
         let messageTextDto = {
           Content: msg,
           Message_group_id: currentChat.MessageGroupId,
@@ -41,7 +43,8 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
           JSON.stringify(messageTextDto)
         );
         //console.log(messageTextDto)
-      } else {
+      }
+      else {
         let messageTextIndDto = {
           Content: msg,
           SenderName: currentUser.Display_name,
@@ -57,6 +60,30 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
       }
       setMsg("");
     }
+    if (images.length > 0) {
+      for (let i = 0; i < images.length; i++) {
+        console.log("Image", i+1, ":", images[i]);
+      }
+      setImages([]);
+    }
+  };
+
+  const handleImageUploadChange = (event) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      setImages(files);
+      let imageNames = "";
+      for (let i = 0; i < files.length; i++) {
+        imageNames += files[i].name + ", ";
+      }
+      setMsg(imageNames);
+    }
+};
+  const handleFileUploadClick = () => {
+    const imageUpload = document.getElementById('imageUpload');
+    if (imageUpload) {
+      imageUpload.click();
+    }
   };
 
   return (
@@ -66,18 +93,24 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
           <BsEmojiSmileFill onClick={handleEmojiPickerhideShow} />
           {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick} />}
         </div>
+        <div className="upload-image">
+        <input type="file" id="imageUpload" onChange={handleImageUploadChange} multiple />
+          <FiImage onClick={handleFileUploadClick} />
+        </div>
       </div>
-      <form className="input-container" onSubmit={(event) => sendChat(event)}>
-        <input
-          type="text"
-          placeholder="type your message here"
-          onChange={(e) => setMsg(e.target.value)}
-          value={msg}
-        />
-        <button type="submit">
-          <IoMdSend />
-        </button>
-      </form>
+      <div className="input-container">
+        <form onSubmit={(event) => sendChat(event)}>
+          <input
+            type="text"
+            placeholder="type your message here"
+            onChange={(e) => setMsg(e.target.value)}
+            value={msg}
+          />
+          <button type="submit">
+            <IoMdSend />
+          </button>
+        </form>
+      </div>
     </Container>
   );
 }
@@ -85,13 +118,12 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
 const Container = styled.div`
   display: grid;
   align-items: center;
-  grid-template-columns: 5% 95%;
-  background-color: #333;
-  position: relative;
-  padding-right: 4rem;
-  padding: 0.5rem;
-  border-radius: 2rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  grid-template-columns: 10% 90%;
+  background-color: #333; 
+  position: relative; 
+  padding: 0.5rem; 
+  border-radius: 2rem; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
   @media screen and (min-width: 720px) and (max-width: 1080px) {
     padding: 0 1rem;
     gap: 1rem;
@@ -99,14 +131,14 @@ const Container = styled.div`
   .button-container {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     color: white;
-    gap: 1rem;
     .emoji {
       position: relative;
       svg {
         cursor: pointer;
-        font-size: 2rem;
-        margin: 0 0.5rem;
+        font-size: 2rem; 
+        margin: 0 0.2rem; 
         color: #ffc107;
       }
       .emoji-picker-react {
@@ -133,7 +165,22 @@ const Container = styled.div`
         }
         .emoji-group:before {
           background-color: #080420;
-        }
+        }  
+      }
+    }
+    .upload-image {
+      position: relative;
+      
+      input[type="file"] {
+        display: none;
+      }
+      
+      svg {
+        cursor: pointer;
+        font-size: 2rem; 
+        margin: 0 0.2rem; 
+        color: #fff;
+        vertical-align: middle;
       }
     }
   }
@@ -142,17 +189,23 @@ const Container = styled.div`
     border-radius: 2rem;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     overflow: hidden;
-    gap: 2rem;
+    gap: 1rem;
     background-color: #fff;
+    form {
+      width: 100%;
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+    }
     input {
       flex: 1;
       width: 90%;
-      height: 2.5rem;
+      height: 3rem;
       color: black;
       padding-left: 1rem;
       border: none;
-      margin-left: 0.5rem;
       font-size: 1.2rem;
 
       &::selection {
@@ -163,10 +216,9 @@ const Container = styled.div`
       }
     }
     button {
-      border-radius: 50px;
-      width: 4rem;
+      border-radius: 50px; 
+      width: 3rem;
       height: 3rem;
-      right: -2rem;
       padding: 0.5rem;
       display: flex;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);

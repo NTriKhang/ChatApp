@@ -15,12 +15,12 @@ var stompClient = null;
 const ChatPage = () => {
   const [currentChat, setCurrentChat] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [contacts, setContacts] = useState([]);
   const [message, setMessage] = useState({});
+  const [notify, setNotify] = useState({});
   const [isConnect, setIsConnect] = useState(false);
   const currentUser = getCurrentUserLocal();
   const { data: messageGroup, refetch } = useGetMessageGroup(currentUser._id);
-
+  
   const connect = () => {
     let Sock = new SockJS("http://localhost:8080/ws");
     stompClient = over(Sock);
@@ -32,6 +32,13 @@ const ChatPage = () => {
     console.log("id " + userId)
     stompClient.subscribe('/user/' + userId + '/message_group', onGroupMessage);
     stompClient.subscribe('/user/' + userId + '/message', onMessage);
+    stompClient.subscribe('/user/' + userId + '/notify', onNotify)
+  }
+  const onNotify = (payload) => {
+    var payloadData = JSON.parse(payload.body);
+    console.log("On socket response ", payloadData)
+    setNotify(payloadData)
+    refetch()
   }
   const onMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
@@ -51,16 +58,6 @@ const ChatPage = () => {
     refetch();
   };
 
-  const updateContactInfo = (updatedContact) => {
-    const updatedContacts = contacts.map((contact) => {
-      if (contact.MessageGroupId === updatedContact.MessageGroupId) {
-        return updatedContact;
-      }
-      return contact;
-    });
-    setContacts(updatedContacts);
-  };
-
   const changeChat = (newChat) => {
     setCurrentChat(newChat);
   };
@@ -68,13 +65,6 @@ const ChatPage = () => {
   const changeCurrentChat = (index, contact) => {
     changeChat(contact);
     setShowWelcome(false);
-  };
-
-  const updateGroupName = (newGroupName) => {
-    setCurrentChat((prevChat) => ({
-      ...prevChat,
-      Message_group_name: newGroupName,
-    }));
   };
 
   useEffect(() => {
@@ -86,7 +76,7 @@ const ChatPage = () => {
   return (
     <PageContainer>
       <div className="container">
-        <Contacts messageGroup={messageGroup} changeChat={changeChat}/>
+        <Contacts messageGroup={messageGroup} changeChat={changeCurrentChat} currentChat={currentChat} stompClient={stompClient}/>
 
         {currentChat ? (
           <ChatContainer

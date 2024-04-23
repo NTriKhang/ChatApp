@@ -62,10 +62,10 @@ public class MessageService {
 		Message_groups receiveGroups = new Message_groups(senderUser.get().Display_name, senderUser.get().Background_image_path, null, Utility.MsgGroupType.Individual);
 		try {
 			senderGroups = messageGroupsRepository.save(senderGroups);
-			addGroupIdToListGroupOfUser(senderGroups._id, senderUser.get()._id, true);
+			addGroupIdToListGroupOfUser(senderGroups._id, senderUser.get()._id, receiveUser.get()._id, true);
 		
 			receiveGroups = messageGroupsRepository.save(receiveGroups);
-			addGroupIdToListGroupOfUser(receiveGroups._id, receiveUser.get()._id, false);
+			addGroupIdToListGroupOfUser(receiveGroups._id, receiveUser.get()._id, senderUser.get()._id, false);
 			
 			updateConnectedMsgGroup(senderGroups._id, receiveGroups._id);
 			updateConnectedMsgGroup(receiveGroups._id, senderGroups._id);
@@ -79,6 +79,7 @@ public class MessageService {
 		}
 		
 	}
+	
 	private void updateConnectedMsgGroup(String groupdId1, String groupdId2) {
 		
 		ObjectId id = new ObjectId(groupdId1);
@@ -86,13 +87,16 @@ public class MessageService {
 		Update update = new Update().set("MsgConnectedId", new ObjectId(groupdId2));
 		mongoTemplate.updateFirst(query, update, Message_groups.class);
 	}
-	private void addGroupIdToListGroupOfUser(String groupId, String userId, Boolean isSender) {
+	/**
+	 * Nếu là nhóm nhiều người thì receiverId set = null */
+	private void addGroupIdToListGroupOfUser(String groupId, String userId, String receiverId, Boolean isSender) {
 		ObjectId id = new ObjectId(userId);
 		Query query = Query.query(Criteria.where("_id").is(id));
-		MessageGroup_User messageGroup_User = new MessageGroup_User(groupId, isSender, Utility.Role.Participant);
+		MessageGroup_User messageGroup_User = new MessageGroup_User(groupId, isSender, Utility.Role.Participant, receiverId);
 		Update update = new Update().push("List_message_group", messageGroup_User);
 		mongoTemplate.updateFirst(query, update, Users.class);
 	}
+	
 	public List<Messages> insertBothMessage(SenderUser_Msg sender, String senderGroupId, String receiverGroupId, String Content) {
 		List<Messages> messageList = new ArrayList<Messages>();
 		Messages messageSender = insertPrivateMessage(senderGroupId, Content, sender);
