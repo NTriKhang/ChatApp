@@ -49,7 +49,7 @@ const AddGroupModal = ({ isShow, onCancel, stompClient }) => {
         userList: values.userList
       }
       stompClient.send("/app/CreateGroup", {}, JSON.stringify(createGroupRequest))
-      oncancel()
+      onCancel()
     }
 
   };
