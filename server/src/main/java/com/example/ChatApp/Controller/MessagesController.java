@@ -111,7 +111,14 @@ public class MessagesController {
 													  @PathVariable("group_id") String group_id,
 													  @RequestParam(value = "page", defaultValue = "1") int page) {
 			List<Messages> messages = messageService.getMessagesByGroupId(group_id, userId, page);
-			System.out.println(messages.size());
+			return new ResponseEntity<List<Messages>>(messages, HttpStatus.OK);
+	}
+	@GetMapping("/getAmbigoursMessages/{receiverId}")
+	public ResponseEntity<List<Messages>> getMessagesByReceiverId(
+													  @PathVariable("receiverId") String receiverId,
+													  @RequestParam(value = "userId", defaultValue = "") String userId,
+													  @RequestParam(value = "page", defaultValue = "1") int page) {
+			List<Messages> messages = messageService.getMessagesByReceiverId(receiverId, userId, page);
 			return new ResponseEntity<List<Messages>>(messages, HttpStatus.OK);
 	}
 	@DeleteMapping("/deleteMessage/{message_id}")

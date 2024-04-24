@@ -31,7 +31,7 @@ import { useGetUserByTag } from "../hooks/useGetUserByTag";
 import { AddGroup, AddGroupModal } from "./modal/AddGroupModal";
 import { UpdateUserModal } from "./modal/UpdateUserModal";
 
-export default function Contacts({ changeChat, messageGroup, currentChat, stompClient }) {
+export default function Contacts({ changeChat, messageGroup, currentChat, stompClient, changeSelectedSearch}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenAvatar, setIsModalOpenAvatar] = useState(false);
   const [isModalOpenBackground, setIsModalOpenBackground] = useState(false);
@@ -57,11 +57,11 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
     changeChat(index, contact);
     setTitleChat({ contact, index });
   };
-
+  const onSelectedUserSearch = (user) => {
+    changeSelectedSearch(user)
+  }
   useEffect(() => {
-    console.log("log msg in contact", currentChat);
     if (currentChat !== null) {
-      console.log("right");
       changeChat(0, {
         ...titleChat?.contact,
         Message_group_name:
@@ -87,7 +87,6 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
         },
       });
       if (!res) return;
-      console.log("thành công");
     }
   };
 
@@ -100,7 +99,6 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
         },
       });
       if (!res) return;
-      console.log("thành công");
     }
   };
 
@@ -130,7 +128,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
           <UserInfoBox>
             <ul>
               {users.map((user) => (
-                <li key={user._id}>
+                <li key={user._id} onClick={() => onSelectedUserSearch(user)}>
                   <div className="avatar">
                     <img src={user.Image_path} alt={user.Display_name} />
                   </div>
