@@ -26,6 +26,7 @@ import com.example.ChatApp.Repositories.MessageRepository;
 import com.example.ChatApp.Repositories.UsersRepository;
 import com.example.ChatApp.SocketDto.MessageTextDto;
 import com.example.ChatApp.SocketDto.MessageTextIndDto;
+import com.example.ChatApp.dto.MsgGroupIdDto;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 @Service
@@ -53,6 +54,7 @@ public class MessageService {
 	 * phần tử đầu là tin nhắn của người gửi đi
 	 * phần từ sau là tin nhắn của người nhận */
 	public List<Messages> InitPrivateMessage(MessageTextIndDto messageTextIndDto) {
+		
 		Optional<Users> senderUser = usersRepository.find_By(messageTextIndDto.SenderId);
 		Optional<Users> receiveUser = usersRepository.find_By(messageTextIndDto.ReceiverId);
 		
@@ -134,7 +136,18 @@ public class MessageService {
 		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, userId, skip, limit);
 		return messages;
 	}
-	
+	public List<Messages> getMessagesByReceiverId(String receiverId, String userId, int page) {
+		Optional<MsgGroupIdDto> msgOptional = usersRepository.findByReceiverIdAndUserId(new ObjectId(receiverId), new ObjectId(userId));
+		if(msgOptional.isEmpty())
+			return null;
+		
+		ObjectId objectId = new ObjectId(msgOptional.get().messageGroupId);
+		int limit = 20;
+		int skip = (page - 1) * limit;
+
+		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, userId, skip, limit);
+		return messages;
+	}
 	public Messages deleteMessagesById(String messageId, String userId) {
 		ObjectId objectId = new ObjectId(messageId);
 		Messages message = messageRepository.findMessagesById(objectId);

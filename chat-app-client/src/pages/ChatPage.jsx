@@ -29,25 +29,21 @@ const ChatPage = () => {
   };
   const onConnected = () => {
     var userId = getCurrentUserLocal()["_id"];
-    console.log("id " + userId)
     stompClient.subscribe('/user/' + userId + '/message_group', onGroupMessage);
     stompClient.subscribe('/user/' + userId + '/message', onMessage);
     stompClient.subscribe('/user/' + userId + '/notify', onNotify)
   }
   const onNotify = (payload) => {
     var payloadData = JSON.parse(payload.body);
-    console.log("On socket response ", payloadData)
     setNotify(payloadData)
     refetch()
   }
   const onMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
-    console.log("On socket response ", payloadData)
     setMessage(payloadData)
   }
   const onGroupMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
-    console.log("On socket response ", payloadData);
     setMessage(payloadData);
   };
   const onError = (err) => {
@@ -58,12 +54,24 @@ const ChatPage = () => {
     refetch();
   };
 
-  const changeChat = (newChat) => {
-    setCurrentChat(newChat);
-  };
-
+  const changeSelectedSearch = (user) => {
+    //console.log(user)
+    let newContact = {
+      Is_read : true,
+      Last_message : {message_id: null, content: null, user_name: null, created_date: null},
+      MessageGroupId : "",
+      Message_group_image : user.Image_path,
+      Message_group_name : user.Display_name,
+      Message_group_type : "Individual",
+      ReceiverId : user._id,
+      Role : "Participant"
+    }
+    console.log(newContact)
+    setCurrentChat(newContact)
+  }
   const changeCurrentChat = (index, contact) => {
-    changeChat(contact);
+    console.log(contact)
+    setCurrentChat(contact);
     setShowWelcome(false);
   };
 
@@ -76,7 +84,11 @@ const ChatPage = () => {
   return (
     <PageContainer>
       <div className="container">
-        <Contacts messageGroup={messageGroup} changeChat={changeCurrentChat} currentChat={currentChat} stompClient={stompClient}/>
+        <Contacts messageGroup={messageGroup} 
+                  changeChat={changeCurrentChat} 
+                  currentChat={currentChat} 
+                  stompClient={stompClient}
+                  changeSelectedSearch={changeSelectedSearch}/>
 
         {currentChat ? (
           <ChatContainer
