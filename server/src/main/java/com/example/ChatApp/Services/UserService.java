@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -179,5 +180,15 @@ public class UserService {
 		UpdateResult result = mongoTemplate.updateFirst(query, update, Users.class);
 
 		return result;
+	}
+	
+	public Optional<Users> findUserById(String userId) {
+		return usersRepository.findById(userId)
+				.or(() -> Optional.empty());
+	} 
+
+	public Optional<List<Users>> findUsersByTag(String tag) {
+		return usersRepository.findUsersByTag(tag)
+				.or(() -> Optional.empty());
 	}
 }

@@ -38,6 +38,17 @@ public class Messages {
 	public Messages() {
 		
 	}
+	
+	public Messages(String content, String message_group_id) {
+		super();
+		Content = content;
+		Message_group_id = new ObjectId(message_group_id);
+		Type = Utility.MessageType.Text;
+		Created_date = LocalDateTime.now();
+		Unseen = new ArrayList<String>();
+		Seen_by = new ArrayList<String>();
+	}
+
 	public Messages(String content, String message_group_id,
 			SenderUser_Msg sender_user) {
 		super();

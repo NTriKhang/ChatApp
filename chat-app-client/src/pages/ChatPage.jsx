@@ -1,105 +1,117 @@
-import React, { useState, useEffect } from 'react';
-import Contacts from "../components/Contacts"; 
-import styled from 'styled-components';
+import React, { useState, useEffect } from "react";
+import Contacts from "../components/Contacts";
+import styled from "styled-components";
 import ChatContainer from "../components/ChatContainer";
 
 import Welcome from "../components/Welcome";
 ///Khang
-import { over } from 'stompjs';
-import SockJS from 'sockjs-client';
-import { getCurrentUserLocal, setConnectState, setConnectStateLocal } from '../utils/LocalStorage';
+import { over } from "stompjs";
+import SockJS from "sockjs-client";
+import { getCurrentUserLocal } from "../utils/LocalStorage";
+import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
 
 var stompClient = null;
 
 const ChatPage = () => {
   const [currentChat, setCurrentChat] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [contacts, setContacts] = useState([]);
-  const [updatename, setUpdateName] = useState('');
-  const [message, setMessage] = useState({})
-  ///Khang
-  const [isConenct, setIsConnect] = useState(false)
-
-  const connect =()=>{
-    let Sock = new SockJS('http://localhost:8080/ws');
-    stompClient = over(Sock);     
-    stompClient.connect({},onConnected, onError);
-    // stompClient.disconnect(function(){
-    //   console.log("disconnected")
-    // })
-    console.log(stompClient)
-
-  }
+  const [message, setMessage] = useState({});
+  const [notify, setNotify] = useState({});
+  const [isConnect, setIsConnect] = useState(false);
+  const currentUser = getCurrentUserLocal();
+  const { data: messageGroup, refetch } = useGetMessageGroup(currentUser._id);
+  
+  const connect = () => {
+    let Sock = new SockJS("http://localhost:8080/ws");
+    stompClient = over(Sock);
+    stompClient.connect({}, onConnected, onError);
+    console.log(stompClient);
+  };
   const onConnected = () => {
     var userId = getCurrentUserLocal()["_id"];
-    console.log("id " + userId)
-    stompClient.subscribe('/user/'+userId+'/message_group', onGroupMessage);
+    stompClient.subscribe('/user/' + userId + '/message_group', onGroupMessage);
+    stompClient.subscribe('/user/' + userId + '/message', onMessage);
+    stompClient.subscribe('/user/' + userId + '/notify', onNotify)
+  }
+  const onNotify = (payload) => {
+    var payloadData = JSON.parse(payload.body);
+    setNotify(payloadData)
+    refetch()
+  }
+  const onMessage = (payload) => {
+    var payloadData = JSON.parse(payload.body);
+    setMessage(payloadData)
   }
   const onGroupMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
-    console.log("On socket response ", payloadData)
-    setMessage(payloadData)
-  }
+    setMessage(payloadData);
+  };
   const onError = (err) => {
     console.log(err);
+<<<<<<< HEAD
   }
   const onSave = (newName) => {
     setUpdateName(newName);
   }
+=======
+  };
+>>>>>>> 0f917c8418bde69cb72edc4259d7bd89cad8dd9f
 
-  const updateContactInfo = (updatedContact) => {
-    const updatedContacts = contacts.map(contact => {
-      if (contact.MessageGroupId === updatedContact.MessageGroupId) {
-        return updatedContact;
-      }
-      return contact;
-    });
-    setContacts(updatedContacts); 
+  const onSave = () => {
+    refetch();
   };
-  const changeChat = (newChat) => {
-    setCurrentChat(newChat);
-  };
-  
+
+  const changeSelectedSearch = (user) => {
+    //console.log(user)
+    let newContact = {
+      Is_read : true,
+      Last_message : {message_id: null, content: null, user_name: null, created_date: null},
+      MessageGroupId : "",
+      Message_group_image : user.Image_path,
+      Message_group_name : user.Display_name,
+      Message_group_type : "Individual",
+      ReceiverId : user._id,
+      Role : "Participant"
+    }
+    console.log(newContact)
+    setCurrentChat(newContact)
+  }
   const changeCurrentChat = (index, contact) => {
-    changeChat(contact); 
+    console.log(contact)
+    setCurrentChat(contact);
     setShowWelcome(false);
   };
-  const updateGroupName = (newGroupName) => {
-    setCurrentChat(prevChat => ({
-      ...prevChat,
-      Message_group_name: newGroupName
-    }));
-  };
-  
+
   useEffect(() => {
-    if (isConenct === false) {
+    if (isConnect === false) {
       connect();
     }
   }, []);
 
   return (
     <PageContainer>
-      <div className='container'>
-      <Contacts 
-            changeChat={changeChat} 
-            changeCurrentChat={changeCurrentChat} 
-            onSave={updatename}/>
+      <div className="container">
+        <Contacts messageGroup={messageGroup} 
+                  changeChat={changeCurrentChat} 
+                  currentChat={currentChat} 
+                  stompClient={stompClient}
+                  changeSelectedSearch={changeSelectedSearch}/>
 
-
-
-        {currentChat ? ( 
-          <ChatContainer 
-          currentChat={currentChat} 
-          onSave={onSave}
-          stompClient={stompClient}
-          messagePayload={message}/>
+        {currentChat ? (
+          <ChatContainer
+            messageGroup={messageGroup}
+            currentChat={currentChat}
+            onSave={onSave}
+            stompClient={stompClient}
+            messagePayload={message}
+          />
         ) : (
-          <Welcome /> 
+          <Welcome />
         )}
       </div>
     </PageContainer>
   );
-};
+}
 
 export default ChatPage;
 const PageContainer = styled.div`
