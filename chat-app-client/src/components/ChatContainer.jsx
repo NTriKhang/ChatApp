@@ -339,7 +339,7 @@ const Container = styled.div`
     flex-direction: column;
     gap: 10px;
     overflow-y: auto; 
-    max-height: 530px;
+    max-height: 470px;
 
 
     .message {

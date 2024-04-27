@@ -19,7 +19,9 @@ export default function SearchBar({ onSearch }) {
         onChange={handleSearchChange}
       />
       <SearchButton>
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Search_icon.svg/768px-Search_icon.svg.png" alt="Search Icon" />
+      <span class="material-symbols-outlined">
+        search
+      </span>
       </SearchButton>
     </SearchContainer>
   );
@@ -44,13 +46,9 @@ const SearchInput = styled.input`
 
 const SearchButton = styled.button`
   position: absolute;
-  right: 0;
-  top: 0;
+  right: 10px;
+  top: 4px;
   bottom: 0;
-  background-color: #302b63; 
-  border: none;
-  border-top-right-radius: 20px; 
-  border-bottom-right-radius: 20px; 
   padding: 5px;
   cursor: pointer;
   outline: none;

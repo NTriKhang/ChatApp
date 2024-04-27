@@ -48,14 +48,7 @@ const ChatPage = () => {
   };
   const onError = (err) => {
     console.log(err);
-<<<<<<< HEAD
   }
-  const onSave = (newName) => {
-    setUpdateName(newName);
-  }
-=======
-  };
->>>>>>> 0f917c8418bde69cb72edc4259d7bd89cad8dd9f
 
   const onSave = () => {
     refetch();

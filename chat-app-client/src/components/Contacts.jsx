@@ -169,7 +169,16 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                 ) : (
                   <p>Chưa có tin nhắn cuối</p>
                 )}
-                {contact.is_read ? <span>✅</span> : <span>❌</span>}
+                {contact.is_read ? <span class="material-symbols-outlined">
+                                      verified
+                                    </span> : <span class="material-symbols-outlined">
+                                                radio_button_unchecked
+                                              </span>}
+              </div>
+              <div className="tools">
+              <span class="material-symbols-outlined">
+                more_horiz
+              </span>
               </div>
             </div>
           ))}
@@ -354,7 +363,7 @@ const Container = styled.div`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
-    max-height: 70vh;
+    max-height: 55vh;
     margin-bottom: 10px;
     &::-webkit-scrollbar {
       width: 5px;
@@ -363,11 +372,12 @@ const Container = styled.div`
       background: #5d5d5d;
     }
     .contact {
+      position: relative;
       flex-grow: 1;
       display: flex;
       align-items: center;
       background-color: #222034;
-      padding: 10px;
+      padding: 5px;
       border-radius: 8px;
       cursor: pointer;
       transition: transform 0.2s ease-in-out;
@@ -397,9 +407,31 @@ const Container = styled.div`
           font-size: 0.8rem;
         }
       }
+      .tools {
+        position: absolute;
+        color: #fff;
+        box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+        right: 15px;
+        width: 35px;
+        height: 35px;
+        background-color:#171523;
+        display:none;
+        border-radius: 50%;
+      }
+      .tools:hover {
+        background-color:#2c2938;
+        box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+      }
     }
     .selected {
       background-color: #554e8f;
+    }
+    .contact:hover {
+      .tools {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
     }
   }
 
@@ -451,12 +483,13 @@ const UserInfoBox = styled.div`
   top: 130px;
   left: 10px;
   width: 85%;
+  max-height: 400px; /* Limiting the height */
+  overflow-y: auto; /* Adding scrollbar when content exceeds height */
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 5px;
   z-index: 999;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-  
 
   .avatar {
     width: 40px;
@@ -489,4 +522,5 @@ const UserInfoBox = styled.div`
     }
   }
 `;
+
 
