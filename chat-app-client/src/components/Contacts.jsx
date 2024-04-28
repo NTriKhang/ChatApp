@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Modal,
   Image,
@@ -51,6 +51,8 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
   const { users, loading } = userByTag(searchTerm);
   const [showUserInfo, setShowUserInfo] = useState(true);
 
+  const modalToolsRef = useRef(null);
+  const [showModalTools, setShowModalTools] = useState(false);
   // gọi hàm "refetch" phía trên để call lại api
 
   const changeCurrentChat = (contact, index) => {
@@ -107,6 +109,15 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
     setSearchTerm(term);
   };
 
+  const handleClickOutsideModalTools = (event) => {
+    if (modalToolsRef.current && !modalToolsRef.current.contains(event.target)) {
+      // Nếu click ra ngoài modal_tools, ẩn nó đi
+      setShowModalTools(false);
+    }
+  };
+  const handleDeleteMess = () => {
+    alert("Delete messages")
+  };
   return (
     <>
       <Container>
@@ -175,11 +186,16 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                                                 radio_button_unchecked
                                               </span>}
               </div>
-              <div className="tools">
-              <span class="material-symbols-outlined">
-                more_horiz
-              </span>
+              <div className="tools" ref={modalToolsRef}>
+                <span class="material-symbols-outlined"  onClick={() => setShowModalTools(!showModalTools)}>
+                  more_horiz
+                </span>
               </div>
+              {showModalTools && (
+                  <div className="modal_tools">
+                    <p onClick={(handleDeleteMess)}>Xóa đoạn chat</p>
+                  </div>
+                )}
             </div>
           ))}
         </div>
@@ -421,6 +437,16 @@ const Container = styled.div`
       .tools:hover {
         background-color:#2c2938;
         box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+      }
+      .modal_tools {
+        position: absolute;
+        top: 70px;
+        right: -5px;
+        width: 120px;
+        font-size: 16px;
+        text-align: center;
+        background-color: #fff;
+        z-index:1;
       }
     }
     .selected {
