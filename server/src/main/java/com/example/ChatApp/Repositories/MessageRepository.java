@@ -9,13 +9,20 @@ import com.example.ChatApp.Models.Messages;
 
 public interface MessageRepository extends MongoRepository<Messages, String>  {
 
+//	@Aggregation(pipeline = {
+//			"{ '$match': { 'Message_group_id': ?0, 'Unseen': { $nin: [?1] } } }",
+//			"{ '$sort': { 'Created_date': -1 } }",
+//			"{ '$skip': ?2 }",
+//			"{ '$limit': ?3 }"
+//	})
+//	List<Messages> findMessagesByGroupId(ObjectId groupId, String userId, int skip, int limit);
 	@Aggregation(pipeline = {
-			"{ '$match': { 'Message_group_id': ?0, 'Unseen': { $nin: [?1] } } }",
+			"{ '$match': { 'Message_group_id': ?0 } }",
 			"{ '$sort': { 'Created_date': -1 } }",
-			"{ '$skip': ?2 }",
-			"{ '$limit': ?3 }"
+			"{ '$skip': ?1 }",
+			"{ '$limit': ?2 }"
 	})
-	List<Messages> findMessagesByGroupId(ObjectId groupId, String userId, int skip, int limit);
+	List<Messages> findMessagesByGroupId(ObjectId groupId, int skip, int limit);
 	
 	@Query(value = "{ '_id': ?0 }", delete = true)
 	Messages deleteMessageByIdOfOwner(ObjectId messageObjectId);
