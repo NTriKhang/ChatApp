@@ -41,10 +41,12 @@ const ChatPage = () => {
   const onMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setMessage(payloadData)
+    refetch()
   }
   const onGroupMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setMessage(payloadData);
+    refetch()
   };
   const onError = (err) => {
     console.log(err);
