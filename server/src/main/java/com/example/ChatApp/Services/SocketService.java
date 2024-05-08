@@ -71,6 +71,6 @@ public class SocketService {
 		}
 	}
 	public void sendNotifyDeleteGroupToUser(String userId, String groupId) {
-		simpMessagingTemplate.convertAndSendToUser(userId, "/deletedGroup", groupId);
+		simpMessagingTemplate.convertAndSendToUser(userId, "/notify", groupId);
 	}
 }
