@@ -5,7 +5,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +42,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.result.UpdateResult;
 
 import io.jsonwebtoken.io.IOException;
+import io.jsonwebtoken.lang.Collections;
 
 @Service
 public class MessageGroupService {
@@ -106,6 +110,8 @@ public class MessageGroupService {
 		        return null; // Return null to allow the chain to continue
 		    });
 		}
+		java.util.Collections.sort(rs, java.util.Collections.reverseOrder( Comparator.comparing(obj -> obj.Last_message.created_date)));
+		
 		return rs;
 	}
 
@@ -140,7 +146,7 @@ public class MessageGroupService {
 		
 		Message_groups newGroup;
 
-		newGroup = new Message_groups(request.groupName, "", new LastMessage_MsgGroup(), Utility.MsgGroupType.Group);
+		newGroup = new Message_groups(request.groupName, "", new LastMessage_MsgGroup(LocalDateTime.now()), Utility.MsgGroupType.Group);
 
 		Message_groups savedGroup = messageGroupsRepository.save(newGroup);
 		

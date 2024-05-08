@@ -158,13 +158,13 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                 )}
               </div>
               <div className="username">
-                <h3>{contact.username}</h3>
-                <h3>{contact.Message_group_name}</h3>
-                {contact.last_message ? (
+                {/* <h3>{contact.username}</h3> */}
+                <h3>{contact.Message_group_name}</h3><br></br>
+                {contact.Last_message.content                                                                                                                                                                ? (
                   <p>
-                    {contact.last_message.length >= 26
-                      ? contact.last_message.slice(0, 21) + "..."
-                      : contact.last_message}
+                    {contact.Last_message.content != null && contact.Last_message.content.length >= 15
+                      ? contact.Last_message.content.slice(0, 7) + "..."
+                      : contact.Last_message.user_name + ' : ' + contact.Last_message.content}
                   </p>
                 ) : (
                   <p>Chưa có tin nhắn cuối</p>
@@ -179,7 +179,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
             <div className="flex flex-column items-center">
               <div className="avatar">
                 {currentUserImage ? (
-                  <img src={currentUser.Image_path} alt="avatar" />
+                  <img src={currentUser.Image_path} alt="avatar" />                                           
                 ) : (
                   <img src={currentUser.Image_path} alt="avatar" />
                 )}
