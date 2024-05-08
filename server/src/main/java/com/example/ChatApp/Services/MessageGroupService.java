@@ -12,6 +12,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,20 +21,24 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.objenesis.instantiator.basic.NewInstanceInstantiator;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.ChatApp.Config.Utility;
 import com.example.ChatApp.Models.Message_groups;
+import com.example.ChatApp.Models.Messages;
 import com.example.ChatApp.Models.Users;
 import com.example.ChatApp.Models.Submodels.LastMessage_MsgGroup;
 import com.example.ChatApp.Models.Submodels.MessageGroup_User;
 import com.example.ChatApp.Repositories.MessageGroupsRepository;
 import com.example.ChatApp.Repositories.UsersRepository;
 import com.example.ChatApp.SocketDto.CreateGroupDTO;
+import com.example.ChatApp.dto.DeleteGroupRequestDto;
 import com.example.ChatApp.dto.MessageGroupUpdateDto;
 import com.example.ChatApp.dto.UserGroupDto;
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.result.UpdateResult;
 
 import io.jsonwebtoken.io.IOException;
@@ -42,8 +48,13 @@ import io.jsonwebtoken.lang.Collections;
 public class MessageGroupService {
 	@Autowired
 	private UsersRepository usersRepository;
+	
 	@Autowired
 	private MessageGroupsRepository messageGroupsRepository;
+	
+	@Autowired
+	private MessageService messageService;
+	
 	@Autowired
 	private MongoTemplate mongoTemplate;
 	public String root = System.getProperty("user.dir")+"\\src\\main\\resources\\static\\";
@@ -158,5 +169,31 @@ public class MessageGroupService {
 		Update update = new Update();
 		update.push("List_message_group", messageGroup_User);
 		return mongoTemplate.updateFirst(query, update, Users.class);
+	}
+	
+	public UpdateResult deleteGroup(DeleteGroupRequestDto message_groups, String userId) {
+		ObjectId id = new ObjectId(message_groups.GroupId);
+		Query query = new Query(Criteria.where("_id").is(userId));
+		Update update = new Update().pull("List_message_group", new BasicDBObject("messageGroupId", id));
+		mongoTemplate.updateFirst(query, update, Users.class);
+		
+		if(message_groups.MsgGroupType.equals("Individual")) {
+			query = new Query(Criteria.where("_id").is(id));
+			update = new Update().set("isDeleted", true);
+			
+			return mongoTemplate.updateFirst(query, update, Message_groups.class);
+		}
+		else if(message_groups.MsgGroupType.equals("Group")) {			
+			List<Messages> lstMsg = messageService.getMessagesByGroupId(message_groups.GroupId, userId, 1);
+			List<ObjectId> lstId = lstMsg.stream()
+					.map(Messages -> new ObjectId(Messages._id))
+					.collect(Collectors.toList());
+			query = new Query(Criteria.where("_id").in(lstId));
+			update = new Update().push("Unseen", userId);
+			return mongoTemplate.updateMulti(query, update, Messages.class);
+		}
+		else {
+			return null;
+		}
 	}
 }

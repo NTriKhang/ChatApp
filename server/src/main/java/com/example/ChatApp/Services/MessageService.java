@@ -142,11 +142,17 @@ public class MessageService {
 	}
 	public List<Messages> getMessagesByGroupId(String group_id, String userId, int page) {
 		ObjectId objectId = new ObjectId(group_id);
+		List<Messages> subMessage = new ArrayList<>();
 		int limit = 20;
 		int skip = (page - 1) * limit;
 
-		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, userId, skip, limit);
-		return messages;
+		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, skip, limit);
+		for(Messages message : messages) {
+			if(!message.Unseen.contains(userId)) {
+				subMessage.add(message);
+			}
+		}
+		return subMessage;
 	}
 	public List<Messages> getMessagesByReceiverId(String receiverId, String userId, int page) {
 		Optional<MsgGroupIdDto> msgOptional = usersRepository.findByReceiverIdAndUserId(new ObjectId(receiverId), new ObjectId(userId));
@@ -157,7 +163,7 @@ public class MessageService {
 		int limit = 20;
 		int skip = (page - 1) * limit;
 
-		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, userId, skip, limit);
+		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, skip, limit);
 		return messages;
 	}
 	public Messages deleteMessagesById(String messageId, String userId) {
