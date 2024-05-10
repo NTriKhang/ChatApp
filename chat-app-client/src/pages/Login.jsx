@@ -70,6 +70,8 @@ export default function Login() {
       const { data } = await axios.post(loginRoute, {
         Account_name,
         Password,
+      }, {
+        withCredentials: true
       });
       if (data.status === 500) {
         toast.error(data.error, toastOptions);

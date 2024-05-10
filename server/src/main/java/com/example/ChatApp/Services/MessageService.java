@@ -3,9 +3,11 @@ package com.example.ChatApp.Services;
 import java.lang.foreign.Linker.Option;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.bson.AbstractBsonWriter;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -19,6 +21,7 @@ import com.example.ChatApp.Config.Utility;
 import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Models.Messages;
 import com.example.ChatApp.Models.Users;
+import com.example.ChatApp.Models.Submodels.LastMessage_MsgGroup;
 import com.example.ChatApp.Models.Submodels.MessageGroup_User;
 import com.example.ChatApp.Models.Submodels.SenderUser_Msg;
 import com.example.ChatApp.Repositories.MessageGroupsRepository;
@@ -28,6 +31,7 @@ import com.example.ChatApp.SocketDto.MessageTextDto;
 import com.example.ChatApp.SocketDto.MessageTextIndDto;
 import com.example.ChatApp.dto.MsgGroupIdDto;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.mongodb.client.result.UpdateResult;
 
 @Service
 public class MessageService {
@@ -46,8 +50,15 @@ public class MessageService {
 	public Messages insertOne(MessageTextDto messageTextDto) {
 			Messages messages = new Messages(messageTextDto.Content, messageTextDto.Message_group_id, messageTextDto.Sender_user);
 			messages = messageRepository.save(messages);
+			updateLastMessage(messageTextDto.Message_group_id, new LastMessage_MsgGroup(messages._id, messageTextDto.Content, messageTextDto.Sender_user.user_name, LocalDateTime.now()));
 			return messages;		
 
+	}
+	private UpdateResult updateLastMessage(String msgGroupId, LastMessage_MsgGroup lastMessage_MsgGroup) {
+		ObjectId id = new ObjectId(msgGroupId);
+		Query query = Query.query(Criteria.where("_id").is(id));
+		Update update = new Update().set("Last_message", lastMessage_MsgGroup);
+		return mongoTemplate.updateFirst(query, update, Message_groups.class);
 	}
 	/**
 	 * Hàm trả về 1 List 2 phần tử
@@ -115,6 +126,7 @@ public class MessageService {
 		Messages messages = new Messages(content, groupId, sender);
 		try {
 			messages = messageRepository.save(messages);
+			updateLastMessage(groupId, new LastMessage_MsgGroup(messages._id, content, sender.user_name, LocalDateTime.now()));
 			return messages;
 		} catch (Exception e) {
 			System.out.println(e.getMessage()); 
@@ -130,11 +142,17 @@ public class MessageService {
 	}
 	public List<Messages> getMessagesByGroupId(String group_id, String userId, int page) {
 		ObjectId objectId = new ObjectId(group_id);
+		List<Messages> subMessage = new ArrayList<>();
 		int limit = 20;
 		int skip = (page - 1) * limit;
 
-		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, userId, skip, limit);
-		return messages;
+		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, skip, limit);
+		for(Messages message : messages) {
+			if(!message.Unseen.contains(userId)) {
+				subMessage.add(message);
+			}
+		}
+		return subMessage;
 	}
 	public List<Messages> getMessagesByReceiverId(String receiverId, String userId, int page) {
 		Optional<MsgGroupIdDto> msgOptional = usersRepository.findByReceiverIdAndUserId(new ObjectId(receiverId), new ObjectId(userId));
@@ -145,7 +163,7 @@ public class MessageService {
 		int limit = 20;
 		int skip = (page - 1) * limit;
 
-		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, userId, skip, limit);
+		List<Messages> messages = messageRepository.findMessagesByGroupId(objectId, skip, limit);
 		return messages;
 	}
 	public Messages deleteMessagesById(String messageId, String userId) {
