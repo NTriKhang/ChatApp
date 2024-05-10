@@ -29,6 +29,7 @@ import { useUploadBackgroundImageUser } from "../hooks/useUploadBackgroundImageU
 import { UploadImage } from "./upload/UploadImage";
 import { useGetUserByTag } from "../hooks/useGetUserByTag";
 import { AddGroup, AddGroupModal } from "./modal/AddGroupModal";
+import Logout from "./Logout";
 import { UpdateUserModal } from "./modal/UpdateUserModal";
 
 export default function Contacts({ changeChat, messageGroup, currentChat, stompClient, changeSelectedSearch}) {
@@ -50,6 +51,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
   const [searchTerm, setSearchTerm] = useState("");
   const { users, loading } = userByTag(searchTerm);
   const [showUserInfo, setShowUserInfo] = useState(true);
+  const [showLogout, setShowLogout] = useState(false);
 
   // gọi hàm "refetch" phía trên để call lại api
 
@@ -106,6 +108,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
     setShowUserInfo(term.length !== 0);
     setSearchTerm(term);
   };
+  
 
   return (
     <>
@@ -213,6 +216,11 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                       onClick={handleEdit}
                     >
                       edit
+                    </span>
+                    <span
+                      class="material-symbols-outlined cursor-pointer"
+                    >
+                      <Logout/>
                     </span>
                   </div>
                 }

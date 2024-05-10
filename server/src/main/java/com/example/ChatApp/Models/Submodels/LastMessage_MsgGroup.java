@@ -1,6 +1,5 @@
 package com.example.ChatApp.Models.Submodels;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
