@@ -50,7 +50,7 @@ const ChatPage = () => {
   };
   const onError = (err) => {
     console.log(err);
-  };
+  }
 
   const onSave = () => {
     refetch();

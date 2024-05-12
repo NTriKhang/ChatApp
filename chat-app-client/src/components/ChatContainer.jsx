@@ -124,7 +124,9 @@ export default function ChatContainer({
   const closeImageDialog = () => {
     setShowImageDialog(false);
   };
-
+  const handeCallMess = () => {
+    alert('Reng reng');
+  }
   useEffect(() => {
     currentPage = 1
     reachedEnd = false;
@@ -205,7 +207,13 @@ export default function ChatContainer({
             )}
           </div>
         </div>
-        <Logout />
+        <div>
+          <button className="call-button" onClick={handeCallMess} >
+            <span class="material-symbols-outlined">
+              call
+            </span>
+          </button>
+        </div>
       </div>
       {showImageDialog && (
         <Modal onClick={closeImageDialog}>
@@ -339,7 +347,7 @@ const Container = styled.div`
     flex-direction: column;
     gap: 10px;
     overflow-y: auto; 
-    max-height: 530px;
+    max-height: 470px;
 
 
     .message {
