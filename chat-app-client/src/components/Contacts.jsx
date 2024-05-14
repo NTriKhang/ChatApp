@@ -23,20 +23,31 @@ import axios from "axios";
 import moment from "moment";
 import SearchBar from "./SearchBar";
 import userByTag from "../hooks/userByTag";
-import { useUpdateUser } from "../hooks/useUpdateUser";
+import { useDeleteGroupMessage } from "../hooks/useDeleteGroupMessage";
 import { useUploadImageUser } from "../hooks/useUploadImageUser";
 import { useUploadBackgroundImageUser } from "../hooks/useUploadBackgroundImageUser";
 import { UploadImage } from "./upload/UploadImage";
-import { useGetUserByTag } from "../hooks/useGetUserByTag";
-import { AddGroup, AddGroupModal } from "./modal/AddGroupModal";
+import { AddGroupModal } from "./modal/AddGroupModal";
+import Logout from "./Logout";
 import { UpdateUserModal } from "./modal/UpdateUserModal";
+import { Dropdown } from "antd";
+import { Popconfirm } from "antd";
+import { message } from "antd";
 
-export default function Contacts({ changeChat, messageGroup, currentChat, stompClient }) {
+export default function Contacts({
+  changeChat,
+  messageGroup,
+  currentChat,
+  stompClient,
+  changeSelectedSearch,
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenAvatar, setIsModalOpenAvatar] = useState(false);
   const [isModalOpenBackground, setIsModalOpenBackground] = useState(false);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
   const [isModalAddGroupOpen, setIsModalAddGroupOpen] = useState(false);
+  const [groupDetail, setGroupDetail] = useState();
+
   const [titleChat, setTitleChat] = useState("");
   const currentUser = getCurrentUserLocal();
 
@@ -45,10 +56,12 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
 
   const { mutateAsync: uploadImage } = useUploadImageUser();
   const { mutateAsync: uploadBackground } = useUploadBackgroundImageUser();
-  
+  const { mutateAsync: deleteGroupMessage } = useDeleteGroupMessage();
+
   const [searchTerm, setSearchTerm] = useState("");
   const { users, loading } = userByTag(searchTerm);
   const [showUserInfo, setShowUserInfo] = useState(true);
+  const [showLogout, setShowLogout] = useState(false);
 
   // gọi hàm "refetch" phía trên để call lại api
 
@@ -56,11 +69,11 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
     changeChat(index, contact);
     setTitleChat({ contact, index });
   };
-
+  const onSelectedUserSearch = (user) => {
+    changeSelectedSearch(user);
+  };
   useEffect(() => {
-    console.log("log msg in contact", currentChat);
     if (currentChat !== null) {
-      console.log("right");
       changeChat(0, {
         ...titleChat?.contact,
         Message_group_name:
@@ -72,6 +85,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+  console.log("groupDetail", groupDetail);
 
   const handleEdit = () => {
     setIsModalUpdateOpen(true);
@@ -86,7 +100,6 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
         },
       });
       if (!res) return;
-      console.log("thành công");
     }
   };
 
@@ -99,7 +112,6 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
         },
       });
       if (!res) return;
-      console.log("thành công");
     }
   };
 
@@ -107,6 +119,37 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
     setShowUserInfo(term.length !== 0);
     setSearchTerm(term);
   };
+
+  const confirm = async (e) => {
+    await stompClient.send("/app/deleteGroup", {}, JSON.stringify({
+      GroupId: groupDetail.MessageGroupId,
+      MsgGroupType: groupDetail.Message_group_type,
+      userId: currentUser._id,
+    }));
+  };
+
+  const items = [
+    {
+      key: "1",
+      label: (
+        <Popconfirm
+          title="Xóa đoạn chat"
+          description="Bạn có chác chắn muốn xóa đoạn chat này?"
+          onConfirm={confirm}
+          okText="Xóa"
+          cancelText="Thoát"
+        >
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            Xóa đoạn chat
+          </div>
+        </Popconfirm>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -123,13 +166,13 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
             <span class="material-symbols-outlined text-white">group_add</span>
           </div>
         </div>
-        <SearchBar onSearch={handleSearch}/>{" "}
+        <SearchBar onSearch={handleSearch} />{" "}
         {/* Insert the SearchBar component here */}
         {showUserInfo && !loading && (
           <UserInfoBox>
             <ul>
               {users.map((user) => (
-                <li key={user._id}>
+                <li key={user._id} onClick={() => onSelectedUserSearch(user)}>
                   <div className="avatar">
                     <img src={user.Image_path} alt={user.Display_name} />
                   </div>
@@ -159,19 +202,43 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                 )}
               </div>
               <div className="username">
-                <h3>{contact.username}</h3>
+                {/* <h3>{contact.username}</h3> */}
                 <h3>{contact.Message_group_name}</h3>
-                {contact.last_message ? (
+                <br></br>
+                {contact.Last_message.content ? (
                   <p>
-                    {contact.last_message.length >= 26
-                      ? contact.last_message.slice(0, 21) + "..."
-                      : contact.last_message}
+                    {contact.Last_message.content != null &&
+                    contact.Last_message.content.length >= 15
+                      ? contact.Last_message.content.slice(0, 7) + "..."
+                      : contact.Last_message.user_name +
+                        " : " +
+                        contact.Last_message.content}
                   </p>
                 ) : (
                   <p>Chưa có tin nhắn cuối</p>
                 )}
-                {contact.is_read ? <span>✅</span> : <span>❌</span>}
+                {contact.is_read ? (
+                  <span class="material-symbols-outlined">verified</span>
+                ) : (
+                  <span class="material-symbols-outlined">
+                    radio_button_unchecked
+                  </span>
+                )}
               </div>
+
+              <Dropdown
+                menu={{ items }}
+                placement="bottomLeft"
+                trigger={["click"]}
+                onClick={(e) => {
+                  setGroupDetail(contact);
+                  e.stopPropagation();
+                }}
+              >
+                <div className="tools">
+                  <span class="material-symbols-outlined">more_horiz</span>
+                </div>
+              </Dropdown>
             </div>
           ))}
         </div>
@@ -205,6 +272,9 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                       onClick={handleEdit}
                     >
                       edit
+                    </span>
+                    <span class="material-symbols-outlined cursor-pointer">
+                      <Logout />
                     </span>
                   </div>
                 }
@@ -326,7 +396,6 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
   );
 }
 
-
 const Container = styled.div`
   position: relative;
   display: flex;
@@ -355,7 +424,7 @@ const Container = styled.div`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
-    max-height: 70vh;
+    max-height: 55vh;
     margin-bottom: 10px;
     &::-webkit-scrollbar {
       width: 5px;
@@ -364,11 +433,12 @@ const Container = styled.div`
       background: #5d5d5d;
     }
     .contact {
+      position: relative;
       flex-grow: 1;
       display: flex;
       align-items: center;
       background-color: #222034;
-      padding: 10px;
+      padding: 5px;
       border-radius: 8px;
       cursor: pointer;
       transition: transform 0.2s ease-in-out;
@@ -398,9 +468,33 @@ const Container = styled.div`
           font-size: 0.8rem;
         }
       }
+      .tools {
+        position: absolute;
+        color: #fff;
+        box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
+          rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+        right: 15px;
+        width: 35px;
+        height: 35px;
+        background-color: #171523;
+        display: none;
+        border-radius: 50%;
+      }
+      .tools:hover {
+        background-color: #2c2938;
+        box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
+          rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+      }
     }
     .selected {
       background-color: #554e8f;
+    }
+    .contact:hover {
+      .tools {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
     }
   }
 
@@ -452,12 +546,13 @@ const UserInfoBox = styled.div`
   top: 130px;
   left: 10px;
   width: 85%;
+  max-height: 400px; /* Limiting the height */
+  overflow-y: auto; /* Adding scrollbar when content exceeds height */
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 5px;
   z-index: 999;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-  
 
   .avatar {
     width: 40px;
@@ -490,4 +585,3 @@ const UserInfoBox = styled.div`
     }
   }
 `;
-

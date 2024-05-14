@@ -7,8 +7,6 @@ import ChatInput from "./ChatInput";
 import { getCurrentUserLocal } from "../utils/LocalStorage";
 import UpdateNameMG from "./UpdateNameMG";
 import UploadImages from "./UploadImages";
-import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
-import { BsClipboardPlusFill } from "react-icons/bs";
 
 let currentPage = 1
 let reachedEnd = false;
@@ -21,7 +19,7 @@ export default function ChatContainer({
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
   const [chat, setChat] = useState(currentChat);
-  const { MessageGroupId, Message_group_name, Message_group_image } =
+  const { MessageGroupId, Message_group_name, Message_group_image, ReceiverId } =
     currentChat;
   const [isScrolled, setIsScrolled] = useState(false);
   const lastFetchLength = useRef(0);
@@ -31,19 +29,36 @@ export default function ChatContainer({
   const fetchMessages = async (page) => {
     try {
       console.log(currentChat)
-      const response = await axios.get(
-        `http://localhost:8080/api/v1/messages/${MessageGroupId}?page=${page}`,
-        {
-          withCredentials: true,
+      if(MessageGroupId != ""){
+        const response = await axios.get(
+          `http://localhost:8080/api/v1/messages/${MessageGroupId}?page=${page}`,
+          {
+            withCredentials: true,
+          }
+        );
+        if (!response.data) {
+          throw new Error("Không thể lấy dữ liệu từ API");
         }
-      );
-      if (!response.data) {
-        throw new Error("Không thể lấy dữ liệu từ API");
+        if (response.data == null) {
+          return;
+        }
+        return response.data;
       }
-      if (response.data == null) {
-        return;
+      else if(ReceiverId != ""){
+        const response = await axios.get(
+          `http://localhost:8080/api/v1/messages/getAmbigoursMessages/${ReceiverId}?page=${page}&userId=${getCurrentUserLocal()['_id']}`,
+          {
+            withCredentials: true,
+          }
+        );
+        if (!response.data) {
+          throw new Error("Không thể lấy dữ liệu từ API");
+        }
+        if (response.data == null) {
+          return;
+        }
+        return response.data;
       }
-      return response.data;
     } catch (error) {
       console.error("Lỗi:", error);
       return [];
@@ -107,7 +122,9 @@ export default function ChatContainer({
   const closeImageDialog = () => {
     setShowImageDialog(false);
   };
-
+  const handeCallMess = () => {
+    alert('Reng reng');
+  }
   useEffect(() => {
     currentPage = 1
     reachedEnd = false;
@@ -131,7 +148,6 @@ export default function ChatContainer({
   }, [currentChat]);
 
   useEffect(() => {
-    console.log('new message');
     scrollRef.current?.scrollIntoView();
   }, [messages])
   
@@ -189,7 +205,13 @@ export default function ChatContainer({
             )}
           </div>
         </div>
-        <Logout />
+        <div>
+          <button className="call-button" onClick={handeCallMess} >
+            <span class="material-symbols-outlined">
+              call
+            </span>
+          </button>
+        </div>
       </div>
       {showImageDialog && (
         <Modal onClick={closeImageDialog}>
@@ -323,7 +345,7 @@ const Container = styled.div`
     flex-direction: column;
     gap: 10px;
     overflow-y: auto; 
-    max-height: 530px;
+    max-height: 470px;
 
 
     .message {

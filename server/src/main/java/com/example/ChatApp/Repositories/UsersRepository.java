@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.ChatApp.Models.Users;
 import com.example.ChatApp.dto.IdDto;
+import com.example.ChatApp.dto.MsgGroupIdDto;
 
 @Repository
 public interface UsersRepository extends MongoRepository<Users, ObjectId>{
@@ -29,9 +31,15 @@ public interface UsersRepository extends MongoRepository<Users, ObjectId>{
 
     @Query(value="{ '_id' : ?0 }")
     Optional<Users> findById(String id);
-
-    @Query(value="{ 'List_message_group.messageGroupId' : ?0 }")
-    Optional<Users> findByMsgGroupId(ObjectId msgId);
+    
+	@Aggregation(pipeline = {
+			"{ '$match': { '_id': ?0, 'List_message_group.receiverId': ?1 } }",
+			"{ '$unwind': '$List_message_group' }",
+			"{ '$match': {'List_message_group.receiverId': ?1 } }",
+			"{ '$limit': 1 }",
+			"{ '$project': {'messageGroupId': '$List_message_group.messageGroupId'}}"
+	})
+    Optional<MsgGroupIdDto> findByReceiverIdAndUserId(ObjectId userId, ObjectId receiverId);
 
     @Query(value = "{ 'Tag': {$regex:/?0/i} }")
     Optional<List<Users>> findUsersByTag(String tag);

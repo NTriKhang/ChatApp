@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,6 +30,7 @@ import com.example.ChatApp.Services.MessageGroupService;
 import com.example.ChatApp.Services.MessageService;
 import com.example.ChatApp.Services.SocketService;
 import com.example.ChatApp.SocketDto.CreateGroupDTO;
+import com.example.ChatApp.dto.DeleteGroupRequestDto;
 import com.example.ChatApp.dto.ImageStringDto;
 import com.example.ChatApp.dto.MessageGroupUpdateDto;
 import com.example.ChatApp.dto.UserGroupDto;
@@ -108,5 +110,21 @@ public class MessageGroupController {
 			return new ResponseEntity<>("ERROR", HttpStatus.BAD_REQUEST);
 		}
 		
+	}
+	
+	@MessageMapping("/deleteGroup")
+	public ResponseEntity<?> DeleteGroup(
+				@Payload DeleteGroupRequestDto message_groups
+			) {
+		try {
+			UpdateResult result = messageGroupService.deleteGroup(message_groups, message_groups.userId);
+			if(result.wasAcknowledged()) {
+				socketService.sendNotifyDeleteGroupToUser(message_groups.userId, message_groups.GroupId);
+				return new ResponseEntity<>(HttpStatus.OK);
+			}
+			return new ResponseEntity<>("ERROR", HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			return new ResponseEntity<>("ERROR", HttpStatus.BAD_REQUEST);
+		}
 	}
 }

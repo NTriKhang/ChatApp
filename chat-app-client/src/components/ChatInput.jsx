@@ -50,13 +50,10 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
           SenderName: currentUser.Display_name,
           SenderId: currentUser._id,
           MsgGroupSenderId: currentChat.MessageGroupId,
-          ReceiverId: currentChat.ReceiverId,
-        };
-        stompClient.send(
-          "/app/sendIndMessage",
-          {},
-          JSON.stringify(messageTextIndDto)
-        );
+          ReceiverId: currentChat.ReceiverId
+        }
+        //console.log(messageTextIndDto)
+        stompClient.send("/app/sendIndMessage", {}, JSON.stringify(messageTextIndDto))
       }
       setMsg("");
     }

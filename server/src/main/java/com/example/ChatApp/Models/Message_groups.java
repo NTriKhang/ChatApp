@@ -18,6 +18,7 @@ public class Message_groups {
 	public LastMessage_MsgGroup Last_message;
 	public String MsgGroupType; // có 2 loại, 1 là group thông thường, 2 là Individual (này là tượng trưng cho nhắn tin cá nhân)
 	public String MsgConnectedId;
+	public Boolean isDeleted = false;
 
 	/*
 	 * public Message_groups(String _id, String message_group_name, String
@@ -32,6 +33,7 @@ public class Message_groups {
 		Last_message = last_message;
 		MsgGroupType = groupType;
 		MsgConnectedId = null;
+		isDeleted = false;
 	}
 
 	public Message_groups(String message_group_name, String message_group_image, LastMessage_MsgGroup last_message, String groupType,
@@ -42,10 +44,11 @@ public class Message_groups {
 		Last_message = last_message;
 		MsgGroupType = groupType;
 		MsgConnectedId = msgConnectedId;
+		isDeleted = false;
 	}
 
 	public Message_groups() {
         
     }
-	
+
 }
