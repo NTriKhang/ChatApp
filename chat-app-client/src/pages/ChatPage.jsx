@@ -35,10 +35,10 @@ const ChatPage = () => {
     stompClient.subscribe('/user/' + userId + '/message', onMessage);
     stompClient.subscribe('/user/' + userId + '/notify', onNotify)
   }
+
   const onNotify = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setNotify(payloadData)
-    refetch()
   }
   const onMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
@@ -92,7 +92,9 @@ const ChatPage = () => {
                   changeChat={changeCurrentChat} 
                   currentChat={currentChat} 
                   stompClient={stompClient}
-                  changeSelectedSearch={changeSelectedSearch}/>
+                  changeSelectedSearch={changeSelectedSearch}
+                  refetch={refetch}
+                  />
 
         {currentChat ? (
           <ChatContainer

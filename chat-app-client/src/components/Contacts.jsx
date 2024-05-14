@@ -40,6 +40,7 @@ export default function Contacts({
   currentChat,
   stompClient,
   changeSelectedSearch,
+  refetch
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenAvatar, setIsModalOpenAvatar] = useState(false);
@@ -126,6 +127,7 @@ export default function Contacts({
       MsgGroupType: groupDetail.Message_group_type,
       userId: currentUser._id,
     }));
+    refetch();
   };
 
   const items = [

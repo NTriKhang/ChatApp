@@ -43,7 +43,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class MessageGroupController {
 	@Autowired
 	private MessageGroupService messageGroupService;
-	@Autowired 
+	@Autowired
 	private SocketService socketService;
 
 	/*
@@ -55,7 +55,8 @@ public class MessageGroupController {
 			@PathVariable("userID") String userID,
 			@RequestParam(value = "isConnected", defaultValue = "false") boolean isConnected) {
 		try {
-			return new ResponseEntity<>(messageGroupService.getListMessGroupByUserID(userID, isConnected), HttpStatus.OK);
+			return new ResponseEntity<>(messageGroupService.getListMessGroupByUserID(userID, isConnected),
+					HttpStatus.OK);
 		} catch (Exception e) {
 			System.out.println("Exception: " + e.getMessage());
 			return new ResponseEntity<>(new ArrayList<UserGroupDto>(), HttpStatus.BAD_REQUEST);
@@ -90,36 +91,34 @@ public class MessageGroupController {
 	public ResponseEntity<?> CreateGroupMessages(@Payload CreateGroupDTO createGroupRequest) {
 		try {
 			Message_groups result = messageGroupService.create_GroupString(createGroupRequest);
-			if(result == null) {
+			if (result == null) {
 				socketService.sendErrorToUser(createGroupRequest.userCreatedId);
-			}
-			else {
-				
+			} else {
+
 				SocketService.addUserToGroup(createGroupRequest.userCreatedId, result._id);
 				socketService.sendNotifyToUser(createGroupRequest.userCreatedId, result);
-				
+
 				for (ObjectId userId : createGroupRequest.userList) {
-					SocketService.addUserToGroup(userId.toString() , result._id);
+					SocketService.addUserToGroup(userId.toString(), result._id);
 					socketService.sendNotifyToUser(userId.toString(), result);
 
 				}
 			}
-			return new ResponseEntity<>( HttpStatus.OK);
+			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
 			System.out.println("Exception: " + e.getMessage());
 			return new ResponseEntity<>("ERROR", HttpStatus.BAD_REQUEST);
 		}
-		
+
 	}
-	
+
 	@MessageMapping("/deleteGroup")
 	public ResponseEntity<?> DeleteGroup(
-				@Payload DeleteGroupRequestDto message_groups
-			) {
+			@Payload DeleteGroupRequestDto message_groups) {
 		try {
 			UpdateResult result = messageGroupService.deleteGroup(message_groups, message_groups.userId);
-			if(result.wasAcknowledged()) {
-				socketService.sendNotifyDeleteGroupToUser(message_groups.userId, message_groups.GroupId);
+			if (result.wasAcknowledged()) {
+				socketService.sendNotifyDeleteGroupToUser(message_groups.userId, message_groups);
 				return new ResponseEntity<>(HttpStatus.OK);
 			}
 			return new ResponseEntity<>("ERROR", HttpStatus.BAD_REQUEST);

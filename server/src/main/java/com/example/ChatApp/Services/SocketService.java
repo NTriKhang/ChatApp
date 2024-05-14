@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Models.Messages;
 import com.example.ChatApp.SocketDto.MessageTextDto;
+import com.example.ChatApp.dto.DeleteGroupRequestDto;
 import com.example.ChatApp.dto.UserGroupDto;
 
 @Service
@@ -70,7 +71,7 @@ public class SocketService {
 			}
 		}
 	}
-	public void sendNotifyDeleteGroupToUser(String userId, String groupId) {
-		simpMessagingTemplate.convertAndSendToUser(userId, "/deletedGroup", groupId);
+	public void sendNotifyDeleteGroupToUser(String userId, DeleteGroupRequestDto groupId) {
+		simpMessagingTemplate.convertAndSendToUser(userId, "/notify", groupId);
 	}
 }
