@@ -7,8 +7,6 @@ import ChatInput from "./ChatInput";
 import { getCurrentUserLocal } from "../utils/LocalStorage";
 import UpdateNameMG from "./UpdateNameMG";
 import UploadImages from "./UploadImages";
-import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
-import { BsClipboardPlusFill } from "react-icons/bs";
 
 let currentPage = 1
 let reachedEnd = false;

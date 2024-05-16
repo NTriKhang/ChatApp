@@ -20,6 +20,7 @@ const ChatPage = () => {
   const [isConnect, setIsConnect] = useState(false);
   const currentUser = getCurrentUserLocal();
   const { data: messageGroup, refetch } = useGetMessageGroup(currentUser._id);
+
   
   const connect = () => {
     let Sock = new SockJS("http://localhost:8080/ws");
@@ -27,16 +28,17 @@ const ChatPage = () => {
     stompClient.connect({}, onConnected, onError);
     console.log(stompClient);
   };
+
   const onConnected = () => {
     var userId = getCurrentUserLocal()["_id"];
     stompClient.subscribe('/user/' + userId + '/message_group', onGroupMessage);
     stompClient.subscribe('/user/' + userId + '/message', onMessage);
     stompClient.subscribe('/user/' + userId + '/notify', onNotify)
   }
+
   const onNotify = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setNotify(payloadData)
-    refetch()
   }
   const onMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
@@ -90,7 +92,9 @@ const ChatPage = () => {
                   changeChat={changeCurrentChat} 
                   currentChat={currentChat} 
                   stompClient={stompClient}
-                  changeSelectedSearch={changeSelectedSearch}/>
+                  changeSelectedSearch={changeSelectedSearch}
+                  refetch={refetch}
+                  />
 
         {currentChat ? (
           <ChatContainer

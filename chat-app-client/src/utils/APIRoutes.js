@@ -5,6 +5,7 @@ export const updateUserImageRoute = `${host}/auth/Upload_Image_path`;
 export const updateUserBackgroundImageRoute = `${host}/auth/Upload_Background_Image_path`;
 export const updateMessageGroupRoute = `${host}/message_group`;
 export const getMessageGroupRoute = (id, connectStateString) => `${host}/message_group/${id}?isConnected=${connectStateString}`;
+export const deleteMessageGroupRoute = `${host}/message_group/deleteGroup`;
 export const getUserByTagRoute = (tag) => `${host}/user/findUser/${tag}`;
 export const registerRoute = `${host}/auth/signup`;
 export const logoutRoute = `${host}/api/auth/logout`;

@@ -23,21 +23,31 @@ import axios from "axios";
 import moment from "moment";
 import SearchBar from "./SearchBar";
 import userByTag from "../hooks/userByTag";
-import { useUpdateUser } from "../hooks/useUpdateUser";
+import { useDeleteGroupMessage } from "../hooks/useDeleteGroupMessage";
 import { useUploadImageUser } from "../hooks/useUploadImageUser";
 import { useUploadBackgroundImageUser } from "../hooks/useUploadBackgroundImageUser";
 import { UploadImage } from "./upload/UploadImage";
-import { useGetUserByTag } from "../hooks/useGetUserByTag";
-import { AddGroup, AddGroupModal } from "./modal/AddGroupModal";
+import { AddGroupModal } from "./modal/AddGroupModal";
 import Logout from "./Logout";
 import { UpdateUserModal } from "./modal/UpdateUserModal";
+import { Dropdown } from "antd";
+import { Popconfirm } from "antd";
+import { message } from "antd";
 
-export default function Contacts({ changeChat, messageGroup, currentChat, stompClient, changeSelectedSearch}) {
+export default function Contacts({
+  changeChat,
+  messageGroup,
+  currentChat,
+  stompClient,
+  changeSelectedSearch,
+  refetch
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenAvatar, setIsModalOpenAvatar] = useState(false);
   const [isModalOpenBackground, setIsModalOpenBackground] = useState(false);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
   const [isModalAddGroupOpen, setIsModalAddGroupOpen] = useState(false);
+  const [groupDetail, setGroupDetail] = useState();
 
   const [titleChat, setTitleChat] = useState("");
   const currentUser = getCurrentUserLocal();
@@ -47,7 +57,8 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
 
   const { mutateAsync: uploadImage } = useUploadImageUser();
   const { mutateAsync: uploadBackground } = useUploadBackgroundImageUser();
-  
+  const { mutateAsync: deleteGroupMessage } = useDeleteGroupMessage();
+
   const [searchTerm, setSearchTerm] = useState("");
   const { users, loading } = userByTag(searchTerm);
   const [showUserInfo, setShowUserInfo] = useState(true);
@@ -60,8 +71,8 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
     setTitleChat({ contact, index });
   };
   const onSelectedUserSearch = (user) => {
-    changeSelectedSearch(user)
-  }
+    changeSelectedSearch(user);
+  };
   useEffect(() => {
     if (currentChat !== null) {
       changeChat(0, {
@@ -75,6 +86,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+  console.log("groupDetail", groupDetail);
 
   const handleEdit = () => {
     setIsModalUpdateOpen(true);
@@ -108,7 +120,38 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
     setShowUserInfo(term.length !== 0);
     setSearchTerm(term);
   };
-  
+
+  const confirm = async (e) => {
+    await stompClient.send("/app/deleteGroup", {}, JSON.stringify({
+      GroupId: groupDetail.MessageGroupId,
+      MsgGroupType: groupDetail.Message_group_type,
+      userId: currentUser._id,
+    }));
+    refetch();
+  };
+
+  const items = [
+    {
+      key: "1",
+      label: (
+        <Popconfirm
+          title="Xóa đoạn chat"
+          description="Bạn có chác chắn muốn xóa đoạn chat này?"
+          onConfirm={confirm}
+          okText="Xóa"
+          cancelText="Thoát"
+        >
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            Xóa đoạn chat
+          </div>
+        </Popconfirm>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -125,7 +168,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
             <span class="material-symbols-outlined text-white">group_add</span>
           </div>
         </div>
-        <SearchBar onSearch={handleSearch}/>{" "}
+        <SearchBar onSearch={handleSearch} />{" "}
         {/* Insert the SearchBar component here */}
         {showUserInfo && !loading && (
           <UserInfoBox>
@@ -162,27 +205,42 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
               </div>
               <div className="username">
                 {/* <h3>{contact.username}</h3> */}
-                <h3>{contact.Message_group_name}</h3><br></br>
-                {contact.Last_message.content                                                                                                                                                                ? (
+                <h3>{contact.Message_group_name}</h3>
+                <br></br>
+                {contact.Last_message.content ? (
                   <p>
-                    {contact.Last_message.content != null && contact.Last_message.content.length >= 15
+                    {contact.Last_message.content != null &&
+                    contact.Last_message.content.length >= 15
                       ? contact.Last_message.content.slice(0, 7) + "..."
-                      : contact.Last_message.user_name + ' : ' + contact.Last_message.content}
+                      : contact.Last_message.user_name +
+                        " : " +
+                        contact.Last_message.content}
                   </p>
                 ) : (
                   <p>Chưa có tin nhắn cuối</p>
                 )}
-                {contact.is_read ? <span class="material-symbols-outlined">
-                                      verified
-                                    </span> : <span class="material-symbols-outlined">
-                                                radio_button_unchecked
-                                              </span>}
+                {contact.is_read ? (
+                  <span class="material-symbols-outlined">verified</span>
+                ) : (
+                  <span class="material-symbols-outlined">
+                    radio_button_unchecked
+                  </span>
+                )}
               </div>
-              <div className="tools">
-              <span class="material-symbols-outlined">
-                more_horiz
-              </span>
-              </div>
+
+              <Dropdown
+                menu={{ items }}
+                placement="bottomLeft"
+                trigger={["click"]}
+                onClick={(e) => {
+                  setGroupDetail(contact);
+                  e.stopPropagation();
+                }}
+              >
+                <div className="tools">
+                  <span class="material-symbols-outlined">more_horiz</span>
+                </div>
+              </Dropdown>
             </div>
           ))}
         </div>
@@ -191,9 +249,9 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
             <div className="flex flex-column items-center">
               <div className="avatar">
                 {currentUserImage ? (
-                  <img src={currentUser.Image_path} alt="avatar" />                                           
+                  <img src={currentUser?.Image_path} alt="avatar" />
                 ) : (
-                  <img src={currentUser.Image_path} alt="avatar" />
+                  <img src={currentUser?.Image_path} alt="avatar" />
                 )}
               </div>
               <div className="username">
@@ -217,10 +275,8 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                     >
                       edit
                     </span>
-                    <span
-                      class="material-symbols-outlined cursor-pointer"
-                    >
-                      <Logout/>
+                    <span class="material-symbols-outlined cursor-pointer">
+                      <Logout />
                     </span>
                   </div>
                 }
@@ -233,7 +289,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                   <div
                     className="px-4 py-5 sm:px-6"
                     style={{
-                      backgroundImage: `url(${currentUser.Background_image_path})`,
+                      backgroundImage: `url(${currentUser?.Background_image_path})`,
                       backgroundRepeat: "no-repeat",
                       backgroundSize: "cover",
                     }}
@@ -262,10 +318,10 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                       <UploadImage onChangeImage={onUpdateImage} />
                     </Modal>
                     <h3 className="text-lg leading-6 font-medium text-white">
-                      {currentUser.Display_name}
+                      {currentUser?.Display_name}
                     </h3>
                     <p className="mt-1 max-w-2xl text-sm text-white">
-                      {currentUser.Email}
+                      {currentUser?.Email}
                     </p>
                     <span
                       class="material-symbols-outlined cursor-pointer "
@@ -293,7 +349,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                           Tên
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                          {currentUser.Display_name}
+                          {currentUser?.Display_name}
                         </dd>
                       </div>
                       <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -301,7 +357,7 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
                           Email
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                          {currentUser.Email}
+                          {currentUser?.Email}
                         </dd>
                       </div>
                       <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -341,7 +397,6 @@ export default function Contacts({ changeChat, messageGroup, currentChat, stompC
     </>
   );
 }
-
 
 const Container = styled.div`
   position: relative;
@@ -418,17 +473,19 @@ const Container = styled.div`
       .tools {
         position: absolute;
         color: #fff;
-        box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+        box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
+          rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
         right: 15px;
         width: 35px;
         height: 35px;
-        background-color:#171523;
-        display:none;
+        background-color: #171523;
+        display: none;
         border-radius: 50%;
       }
       .tools:hover {
-        background-color:#2c2938;
-        box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+        background-color: #2c2938;
+        box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
+          rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
       }
     }
     .selected {
@@ -530,5 +587,3 @@ const UserInfoBox = styled.div`
     }
   }
 `;
-
-
