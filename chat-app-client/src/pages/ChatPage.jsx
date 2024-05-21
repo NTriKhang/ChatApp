@@ -9,19 +9,33 @@ import { over } from "stompjs";
 import SockJS from "sockjs-client";
 import { getCurrentUserLocal } from "../utils/LocalStorage";
 import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
+import { CallModal } from "../components/modal/CallModal";
+import { conforms, every, set } from "lodash";
 
 var stompClient = null;
-
+var localStream = null;
+var peerConnection = null;
+let remoteStream = null;
+let isTrack = false;
+var userId = (getCurrentUserLocal() === null) ? null : getCurrentUserLocal["_id"];
 const ChatPage = () => {
   const [currentChat, setCurrentChat] = useState(null);
+  const [currentCall, setCurrentCall] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
   const [message, setMessage] = useState({});
-  const [notify, setNotify] = useState({});
+  //const [notify, setNotify] = useState({});
   const [isConnect, setIsConnect] = useState(false);
   const currentUser = getCurrentUserLocal();
   const { data: messageGroup, refetch } = useGetMessageGroup(currentUser._id);
 
-  
+  //calling session
+  const [open, setOpen] = useState(false);
+  const [offer, setOffer] = useState(null);
+  const [answer, setAnswer] = useState(null)
+  const [iceCandidate, setIceCandidate] = useState(null);
+  const [isReceive, setIsReceive] = useState(false);
+  const [shutdown, setShutdown] = useState(false);
+
   const connect = () => {
     let Sock = new SockJS("http://localhost:8080/ws");
     stompClient = over(Sock);
@@ -30,15 +44,19 @@ const ChatPage = () => {
   };
 
   const onConnected = () => {
-    var userId = getCurrentUserLocal()["_id"];
-    stompClient.subscribe('/user/' + userId + '/message_group', onGroupMessage);
-    stompClient.subscribe('/user/' + userId + '/message', onMessage);
-    stompClient.subscribe('/user/' + userId + '/notify', onNotify)
+    let userId2 = getCurrentUserLocal()['_id']
+    stompClient.subscribe('/user/' + userId2 + '/message_group', onGroupMessage);
+    stompClient.subscribe('/user/' + userId2 + '/message', onMessage);
+    stompClient.subscribe('/user/' + userId2 + '/notify', onNotify)
+    //call
+    stompClient.subscribe('/user/' + userId2 + '/private_call', onPrivateCall);
+    stompClient.subscribe('/user/' + userId2 + '/offer_private_call', onOfferPrivateCall);
+    stompClient.subscribe('/user/' + userId2 + '/answer_private_call', onAnswerPrivateCall);
+    stompClient.subscribe('/user/' + userId2 + '/shutdown_call', onShutdownCall);
   }
 
   const onNotify = (payload) => {
-    var payloadData = JSON.parse(payload.body);
-    setNotify(payloadData)
+    refetch()
   }
   const onMessage = (payload) => {
     var payloadData = JSON.parse(payload.body);
@@ -57,18 +75,43 @@ const ChatPage = () => {
   const onSave = () => {
     refetch();
   };
-
+  // on get answer from user-2
+  const onAnswerPrivateCall = (event) => {
+    let answer = JSON.parse(event.body)
+    //console.log(peerConnection.remoteDescription)
+    setAnswer(answer)
+  }
+  // on get offer from user-1 
+  const onOfferPrivateCall = (event) => {
+    let offer = JSON.parse(event.body)
+    setIsReceive(true)
+    setOffer(offer);
+    setCurrentCall({ receiverId: offer.senderId, Message_group_image: offer.receiverImageUrl });
+  }
+  // on get iceCandidate from both side
+  const onPrivateCall = (event) => {
+    let iceCandidate = JSON.parse(event.body);
+    setIceCandidate(iceCandidate)
+  }
+  const onShutdownCall = (event) => {
+    setShutdown(true)
+    setCurrentCall(null)
+    setOffer(null)
+    setAnswer(null)
+    setIceCandidate(null)
+    setIsReceive(false)
+  }
   const changeSelectedSearch = (user) => {
     //console.log(user)
     let newContact = {
-      Is_read : true,
-      Last_message : {message_id: null, content: null, user_name: null, created_date: null},
-      MessageGroupId : "",
-      Message_group_image : user.Image_path,
-      Message_group_name : user.Display_name,
-      Message_group_type : "Individual",
-      ReceiverId : user._id,
-      Role : "Participant"
+      Is_read: true,
+      Last_message: { message_id: null, content: null, user_name: null, created_date: null },
+      MessageGroupId: "",
+      Message_group_image: user.Image_path,
+      Message_group_name: user.Display_name,
+      Message_group_type: "Individual",
+      ReceiverId: user._id,
+      Role: "Participant"
     }
     console.log(newContact)
     setCurrentChat(newContact)
@@ -78,13 +121,17 @@ const ChatPage = () => {
     setCurrentChat(contact);
     setShowWelcome(false);
   };
-
+  
+  const showCallModal = (receiverId, Message_group_image) => {
+    setCurrentCall({receiverId, Message_group_image})
+    //console.log(Message_group_image)
+    setOpen(true);
+  };
   useEffect(() => {
     if (isConnect === false) {
       connect();
     }
   }, []);
-
   return (
     <PageContainer>
       <div className="container">
@@ -103,10 +150,23 @@ const ChatPage = () => {
             onSave={onSave}
             stompClient={stompClient}
             messagePayload={message}
+            showCallModal={showCallModal}
           />
         ) : (
           <Welcome />
         )}
+        <CallModal
+          currentCall={currentCall}
+          stompClient={stompClient}
+          open={open}
+          setOpen={setOpen}
+          isReceiving={isReceive}
+          offer={offer}
+          iceCandidate={iceCandidate}
+          answer={answer}
+          shutdown={shutdown}
+          setShutdown={setShutdown}
+        ></CallModal>
       </div>
     </PageContainer>
   );

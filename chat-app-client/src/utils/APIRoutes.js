@@ -3,6 +3,7 @@ export const loginRoute = `${host}/auth/signin`;
 export const updateUserRoute = `${host}/auth`;
 export const updateUserImageRoute = `${host}/auth/Upload_Image_path`;
 export const updateUserBackgroundImageRoute = `${host}/auth/Upload_Background_Image_path`;
+export const updateGroupImageRoute = `${host}/message_group/Upload_Images`;
 export const updateMessageGroupRoute = `${host}/message_group`;
 export const getMessageGroupRoute = (id, connectStateString) => `${host}/message_group/${id}?isConnected=${connectStateString}`;
 export const deleteMessageGroupRoute = `${host}/message_group/deleteGroup`;

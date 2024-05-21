@@ -1,6 +1,5 @@
 package com.example.ChatApp.Services;
 
-import java.lang.foreign.Linker.Option;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,8 +70,8 @@ public class MessageService {
 		
 		if(!senderUser.isPresent() || !receiveUser.isPresent())
 			return  null;
-		Message_groups senderGroups = new Message_groups(receiveUser.get().Display_name, receiveUser.get().Background_image_path, null, Utility.MsgGroupType.Individual);
-		Message_groups receiveGroups = new Message_groups(senderUser.get().Display_name, senderUser.get().Background_image_path, null, Utility.MsgGroupType.Individual);
+		Message_groups senderGroups = new Message_groups(receiveUser.get().Display_name, receiveUser.get().Image_path, null, Utility.MsgGroupType.Individual);
+		Message_groups receiveGroups = new Message_groups(senderUser.get().Display_name, senderUser.get().Image_path, null, Utility.MsgGroupType.Individual);
 		try {
 			senderGroups = messageGroupsRepository.save(senderGroups);
 			addGroupIdToListGroupOfUser(senderGroups._id, senderUser.get()._id, receiveUser.get()._id, true);

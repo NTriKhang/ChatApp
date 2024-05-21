@@ -1,4 +1,5 @@
 package com.example.ChatApp.Controller;
+import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,11 @@ import com.example.ChatApp.Repositories.MessageRepository;
 import com.example.ChatApp.Services.MessageGroupService;
 import com.example.ChatApp.Services.MessageService;
 import com.example.ChatApp.Services.SocketService;
+import com.example.ChatApp.SocketDto.IceCandidateMessageDto;
 import com.example.ChatApp.SocketDto.MessageTextDto;
 import com.example.ChatApp.SocketDto.MessageTextIndDto;
+import com.example.ChatApp.SocketDto.ReceiverStringDto;
+import com.example.ChatApp.SocketDto.SdpMessageDto;
 import com.example.ChatApp.dto.GroupIdRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -99,6 +103,26 @@ public class MessagesController {
 			return messageTextIndDto;
 		}
 	}
+	@MessageMapping("/offer-private-call")
+	public SdpMessageDto offerPrivateCall(@Payload SdpMessageDto offer) {
+		socketService.sendOfferPrivateCall(offer);
+		return offer;
+	}
+	@MessageMapping("/private-call")
+	public IceCandidateMessageDto callPrivate(IceCandidateMessageDto iceCandidate) {
+		socketService.sendIceToUser(iceCandidate);
+		return iceCandidate;
+	}
+	@MessageMapping("/answer-private-call")
+	public SdpMessageDto answerPrivateCall(@Payload SdpMessageDto answer) {
+		socketService.sendAnswerToUser(answer);
+		return answer;
+	}
+	@MessageMapping("/shutdown-call")
+	public ReceiverStringDto shutdownCall(@Payload ReceiverStringDto receiver) {
+		socketService.shutdownCall(receiver);
+		return receiver;
+	}
 	@GetMapping()
 	public ResponseEntity<List<Messages>> getAll(){
 
@@ -121,6 +145,7 @@ public class MessagesController {
 			List<Messages> messages = messageService.getMessagesByReceiverId(receiverId, userId, page);
 			return new ResponseEntity<List<Messages>>(messages, HttpStatus.OK);
 	}
+	
 	@DeleteMapping("/deleteMessage/{message_id}")
 	public ResponseEntity<Messages> deleteMessage(@CookieValue(name = "userId") String userId,
 											     @PathVariable("message_id") String message_id) {

@@ -5,11 +5,13 @@ import styled from "styled-components";
 import Picker from "emoji-picker-react";
 import { FiImage } from "react-icons/fi";
 import { getCurrentUserLocal } from "../utils/LocalStorage";
+import { useUploadMessageFile } from "../hooks/useUploadMessageFile";
 
 export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
   const [msg, setMsg] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [images, setImages] = useState([]);
+  const { mutateAsync: uploadMessageFile } = useUploadMessageFile();
   const handleEmojiPickerhideShow = () => {
     setShowEmojiPicker(!showEmojiPicker);
   };
@@ -18,6 +20,18 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
     let message = msg;
     message += emojiObject.emoji;
     setMsg(message);
+  };
+
+  const onUpdateImage = async (values) => {
+    // if (values?.url) {
+    //   const res = await uploadMessageFile({
+    //     id: MessageGroupId,
+    //     url: {
+    //       imageUrl: values?.url,
+    //     },
+    //   });
+    //   if (!res) return;
+    // }
   };
 
   const sendChat = (event) => {
