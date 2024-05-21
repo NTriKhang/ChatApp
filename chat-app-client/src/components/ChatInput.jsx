@@ -40,7 +40,7 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
     // console.log(stompClient)
     // console.log(currentChat.MessageGroupId)
     var currentUser = getCurrentUserLocal();
-    console.log(currentChat)
+
     if (msg.length > 0) {
       if (currentChat.Message_group_type === 'Group') {
         let messageTextDto = {
@@ -48,10 +48,14 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
           Message_group_id: currentChat.MessageGroupId,
           Sender_user: {
             user_id: currentUser._id,
-            user_name: currentUser.Display_name
-          }
-        }
-        stompClient.send("/app/sendMessage", {}, JSON.stringify(messageTextDto))
+            user_name: currentUser.Display_name,
+          },
+        };
+        stompClient.send(
+          "/app/sendMessage",
+          {},
+          JSON.stringify(messageTextDto)
+        );
         //console.log(messageTextDto)
       }
       else {
@@ -211,7 +215,7 @@ const Container = styled.div`
       width: 90%;
       height: 3rem;
       color: black;
-      padding-left:1rem;
+      padding-left: 1rem;
       border: none;
       font-size: 1.2rem;
 
@@ -228,7 +232,7 @@ const Container = styled.div`
       height: 3rem;
       padding: 0.5rem;
       display: flex;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       justify-content: center;
       align-items: center;
       background-color: #9a86f3;
@@ -245,10 +249,10 @@ const Container = styled.div`
         cursor: pointer;
       }
       &:focus {
-        outline: none; 
+        outline: none;
       }
       &:hover {
-        background-color: #a99ee3; 
+        background-color: #a99ee3;
       }
     }
   }

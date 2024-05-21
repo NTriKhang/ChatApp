@@ -15,8 +15,12 @@ import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Models.Messages;
 import com.example.ChatApp.SocketDto.IceCandidateMessageDto;
 import com.example.ChatApp.SocketDto.MessageTextDto;
+
 import com.example.ChatApp.SocketDto.ReceiverStringDto;
 import com.example.ChatApp.SocketDto.SdpMessageDto;
+
+import com.example.ChatApp.dto.DeleteGroupRequestDto;
+
 import com.example.ChatApp.dto.UserGroupDto;
 
 @Service
@@ -90,4 +94,7 @@ public class SocketService {
 		}
 	}
 
+	public void sendNotifyDeleteGroupToUser(String userId, DeleteGroupRequestDto groupId) {
+		simpMessagingTemplate.convertAndSendToUser(userId, "/notify", groupId);
+	}
 }

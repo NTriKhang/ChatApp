@@ -27,6 +27,7 @@ const ChatPage = () => {
   const [isConnect, setIsConnect] = useState(false);
   const currentUser = getCurrentUserLocal();
   const { data: messageGroup, refetch } = useGetMessageGroup(currentUser._id);
+
   //calling session
   const [open, setOpen] = useState(false);
   const [offer, setOffer] = useState(null);
@@ -41,6 +42,7 @@ const ChatPage = () => {
     stompClient.connect({}, onConnected, onError);
     console.log(stompClient);
   };
+
   const onConnected = () => {
     let userId2 = getCurrentUserLocal()['_id']
     stompClient.subscribe('/user/' + userId2 + '/message_group', onGroupMessage);
@@ -52,6 +54,7 @@ const ChatPage = () => {
     stompClient.subscribe('/user/' + userId2 + '/answer_private_call', onAnswerPrivateCall);
     stompClient.subscribe('/user/' + userId2 + '/shutdown_call', onShutdownCall);
   }
+
   const onNotify = (payload) => {
     refetch()
   }
@@ -132,11 +135,13 @@ const ChatPage = () => {
   return (
     <PageContainer>
       <div className="container">
-        <Contacts messageGroup={messageGroup}
-          changeChat={changeCurrentChat}
-          currentChat={currentChat}
-          stompClient={stompClient}
-          changeSelectedSearch={changeSelectedSearch} />
+        <Contacts messageGroup={messageGroup} 
+                  changeChat={changeCurrentChat} 
+                  currentChat={currentChat} 
+                  stompClient={stompClient}
+                  changeSelectedSearch={changeSelectedSearch}
+                  refetch={refetch}
+                  />
 
         {currentChat ? (
           <ChatContainer
