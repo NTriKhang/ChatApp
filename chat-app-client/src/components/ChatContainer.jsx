@@ -9,6 +9,9 @@ import UpdateNameMG from "./UpdateNameMG";
 import UploadImages from "./UploadImages";
 import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
 import { BsClipboardPlusFill } from "react-icons/bs";
+import { Image } from "antd";
+import { UploadImage } from "./upload/UploadImage";
+import { useUploadGroupImage } from "../hooks/useUploadGroupImage";
 
 let currentPage = 1
 let reachedEnd = false;
@@ -16,7 +19,8 @@ export default function ChatContainer({
   currentChat,
   stompClient,
   onSave,
-  messagePayload
+  messagePayload,
+  showCallModal,
 }) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
@@ -27,11 +31,13 @@ export default function ChatContainer({
   const lastFetchLength = useRef(0);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImageDialog, setShowImageDialog] = useState(false);
+  const [isModalOpenGroupImage, setIsModalOpenGroupImage] = useState(false);
+  const { mutateAsync: uploadGroupImage } = useUploadGroupImage();
 
   const fetchMessages = async (page) => {
     try {
       console.log(currentChat)
-      if(MessageGroupId != ""){
+      if (MessageGroupId != "") {
         const response = await axios.get(
           `http://localhost:8080/api/v1/messages/${MessageGroupId}?page=${page}`,
           {
@@ -46,7 +52,7 @@ export default function ChatContainer({
         }
         return response.data;
       }
-      else if(ReceiverId != ""){
+      else if (ReceiverId != "") {
         const response = await axios.get(
           `http://localhost:8080/api/v1/messages/getAmbigoursMessages/${ReceiverId}?page=${page}&userId=${getCurrentUserLocal()['_id']}`,
           {
@@ -125,8 +131,19 @@ export default function ChatContainer({
     setShowImageDialog(false);
   };
   const handeCallMess = () => {
-    alert('Reng reng');
+    showCallModal(ReceiverId, Message_group_image)
   }
+  const onUpdateImage = async (values) => {
+    if (values?.url) {
+      const res = await uploadGroupImage({
+        id: MessageGroupId,
+        url: {
+          imageUrl: values?.url,
+        },
+      });
+      if (!res) return;
+    }
+  };
   useEffect(() => {
     currentPage = 1
     reachedEnd = false;
@@ -152,7 +169,7 @@ export default function ChatContainer({
   useEffect(() => {
     scrollRef.current?.scrollIntoView();
   }, [messages])
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -208,24 +225,48 @@ export default function ChatContainer({
           </div>
         </div>
         <div>
-          <button className="call-button" onClick={handeCallMess} >
-            <span class="material-symbols-outlined">
-              call
-            </span>
-          </button>
+          {currentChat.Message_group_type !== 'Group' ? (
+            <button className="call-button" onClick={handeCallMess} >
+              <span class="material-symbols-outlined">
+                call
+              </span>
+            </button>
+          ) : (
+            <span></span>
+          )}
         </div>
       </div>
       {showImageDialog && (
-        <Modal onClick={closeImageDialog}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <UploadImages
-              closeDialog={closeImageDialog}
-              GroupID={MessageGroupId}
-              onImageUpload={uploadImg}
-            />
-            <CloseButton onClick={closeImageDialog}>&times;</CloseButton>
-          </ModalContent>
-        </Modal>
+        // <Modal onClick={closeImageDialog}>
+        //   <ModalContent onClick={(e) => e.stopPropagation()}>
+        //     <UploadImages
+        //       closeDialog={closeImageDialog}
+        //       GroupID={MessageGroupId}
+        //       onImageUpload={uploadImg}
+        //     />
+        //     <CloseButton onClick={closeImageDialog}>&times;</CloseButton>
+        //   </ModalContent>
+        // </Modal>
+        <>
+          <Image
+            width={60}
+            height={60}
+            style={{ objectFit: "cover" }}
+            preview={false}
+            //src={currentUser.Image_path}
+            onClick={() => setIsModalOpenGroupImage(true)}
+          />
+          <Modal
+            title="Thay đổi avatar"
+            open={isModalOpenGroupImage}
+            cancelText="Lưu"
+            width="180px"
+            okButtonProps={{ hidden: true }}
+            cancelButtonProps={{ hidden: true }}
+            onCancel={() => setIsModalOpenGroupImage(false)}
+          >
+            <UploadImage onChangeImage={onUpdateImage} />
+          </Modal></>
       )}
       <div className="chat-messages" ref={scrollRef}>
         {messages
@@ -243,9 +284,8 @@ export default function ChatContainer({
                 </div>
               )}
               <div
-                className={`message ${
-                  message.fromSelf ? "sended" : "recieved"
-                }`}
+                className={`message ${message.fromSelf ? "sended" : "recieved"
+                  }`}
               >
                 <div className="content">
                   <p>{message.Content}</p>

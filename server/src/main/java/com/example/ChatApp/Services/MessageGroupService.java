@@ -1,18 +1,12 @@
 
 package com.example.ChatApp.Services;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
@@ -21,10 +15,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.objenesis.instantiator.basic.NewInstanceInstantiator;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.example.ChatApp.Config.Utility;
 import com.example.ChatApp.Models.Message_groups;
@@ -42,7 +33,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.result.UpdateResult;
 
 import io.jsonwebtoken.io.IOException;
-import io.jsonwebtoken.lang.Collections;
 
 @Service
 public class MessageGroupService {

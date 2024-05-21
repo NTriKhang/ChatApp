@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 
 import com.example.ChatApp.Models.Message_groups;
 import com.example.ChatApp.Models.Messages;
+import com.example.ChatApp.SocketDto.IceCandidateMessageDto;
 import com.example.ChatApp.SocketDto.MessageTextDto;
+import com.example.ChatApp.SocketDto.ReceiverStringDto;
+import com.example.ChatApp.SocketDto.SdpMessageDto;
 import com.example.ChatApp.dto.UserGroupDto;
 
 @Service
@@ -61,6 +64,22 @@ public class SocketService {
 	public void sendErrorToUser(String userId) {
 		simpMessagingTemplate.convertAndSendToUser(userId, "/error", "Something mighr wrong, error occur");
 	}
+
+	public void sendNotifyDeleteGroupToUser(String userId, String groupId) {
+		simpMessagingTemplate.convertAndSendToUser(userId, "/notify", groupId);
+	}
+	public void sendIceToUser(IceCandidateMessageDto iceCandidateMessageDto) {
+		simpMessagingTemplate.convertAndSendToUser(iceCandidateMessageDto.receiverId, "/private_call", iceCandidateMessageDto);
+	}
+	public void sendOfferPrivateCall(SdpMessageDto offer) {
+		simpMessagingTemplate.convertAndSendToUser(offer.receiverId, "/offer_private_call", offer);
+	}
+	public void sendAnswerToUser(SdpMessageDto answer) {
+		simpMessagingTemplate.convertAndSendToUser(answer.receiverId, "/answer_private_call", answer);
+	}
+	public void shutdownCall(ReceiverStringDto receiverId) {
+		simpMessagingTemplate.convertAndSendToUser(receiverId.receiverId, "/shutdown_call", receiverId);
+	}
 	public void removeUserFromGroup(String username, String groupName) {
 		List<String> members = groupMembers.get(groupName);
 		if (members != null) {
@@ -70,7 +89,5 @@ public class SocketService {
 			}
 		}
 	}
-	public void sendNotifyDeleteGroupToUser(String userId, String groupId) {
-		simpMessagingTemplate.convertAndSendToUser(userId, "/deletedGroup", groupId);
-	}
+
 }
