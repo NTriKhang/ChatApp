@@ -10,4 +10,7 @@ public class MessageTextIndDto {
 	public String MsgGroupSenderId = ""; 
 	
 	public String ReceiverId = "";	
+	public String Type = "Text";
+	public String Media_path = "";
+
 }

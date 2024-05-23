@@ -60,5 +60,17 @@ public class Messages {
 		Unseen = new ArrayList<String>();
 		Seen_by = new ArrayList<String>();
 	}
+	public Messages(String filePath, String message_group_id,
+			SenderUser_Msg sender_user, String type) {
+		super();
+		Content = null;
+		Media_path = filePath;
+		Type = type;
+		Message_group_id = new ObjectId(message_group_id);
+		Created_date = LocalDateTime.now();
+		Sender_user = sender_user;
+		Unseen = new ArrayList<String>();
+		Seen_by = new ArrayList<String>();
+	}
 	
 }

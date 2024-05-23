@@ -154,7 +154,7 @@ const CallModal = ({
   };
   const getMediaStream = async (deviceId) => {
     const constraints = {
-      video: { deviceId: deviceId ? { exact: deviceId } : undefined },
+      video: { deviceId: deviceId ? { exact: deviceId } : undefined, enabled: false },
       audio: true,
     };
     return await navigator.mediaDevices.getUserMedia(constraints);

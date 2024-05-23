@@ -9,4 +9,6 @@ public class MessageTextDto {
 	public String Content;
 	public String Message_group_id = "";	
 	public SenderUser_Msg Sender_user;
+	public String Type = "Text";
+	public String Media_path = "";
 }

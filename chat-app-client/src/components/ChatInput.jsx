@@ -6,6 +6,7 @@ import Picker from "emoji-picker-react";
 import { FiImage } from "react-icons/fi";
 import { getCurrentUserLocal } from "../utils/LocalStorage";
 import { useUploadMessageFile } from "../hooks/useUploadMessageFile";
+import { UploadImage } from "./upload/UploadImage";
 
 export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
   const [msg, setMsg] = useState("");
@@ -23,15 +24,44 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
   };
 
   const onUpdateImage = async (values) => {
-    // if (values?.url) {
-    //   const res = await uploadMessageFile({
-    //     id: MessageGroupId,
-    //     url: {
-    //       imageUrl: values?.url,
-    //     },
-    //   });
-    //   if (!res) return;
-    // }
+    if (values?.url) {
+      var currentUser = getCurrentUserLocal();
+
+      if (currentChat.Message_group_type === "Group") {
+        let messageTextDto = {
+          Content: null,
+          Message_group_id: currentChat.MessageGroupId,
+          Sender_user: {
+            user_id: currentUser._id,
+            user_name: currentUser.Display_name,
+          },
+          Type: "image",
+          Media_path: values.url,
+        };
+        stompClient.send(
+          "/app/sendMessage",
+          {},
+          JSON.stringify(messageTextDto)
+        );
+        //console.log(messageTextDto)
+      } else {
+        let messageTextIndDto = {
+          Content: null,
+          SenderName: currentUser.Display_name,
+          SenderId: currentUser._id,
+          MsgGroupSenderId: currentChat.MessageGroupId,
+          ReceiverId: currentChat.ReceiverId,
+          Type: "image",
+          Media_path: values.url,
+        };
+        //console.log(messageTextIndDto)
+        stompClient.send(
+          "/app/sendIndMessage",
+          {},
+          JSON.stringify(messageTextIndDto)
+        );
+      }
+    }
   };
 
   const sendChat = (event) => {
@@ -42,7 +72,7 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
     var currentUser = getCurrentUserLocal();
 
     if (msg.length > 0) {
-      if (currentChat.Message_group_type === 'Group') {
+      if (currentChat.Message_group_type === "Group") {
         let messageTextDto = {
           Content: msg,
           Message_group_id: currentChat.MessageGroupId,
@@ -57,23 +87,26 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
           JSON.stringify(messageTextDto)
         );
         //console.log(messageTextDto)
-      }
-      else {
+      } else {
         let messageTextIndDto = {
           Content: msg,
           SenderName: currentUser.Display_name,
           SenderId: currentUser._id,
           MsgGroupSenderId: currentChat.MessageGroupId,
-          ReceiverId: currentChat.ReceiverId
-        }
+          ReceiverId: currentChat.ReceiverId,
+        };
         //console.log(messageTextIndDto)
-        stompClient.send("/app/sendIndMessage", {}, JSON.stringify(messageTextIndDto))
+        stompClient.send(
+          "/app/sendIndMessage",
+          {},
+          JSON.stringify(messageTextIndDto)
+        );
       }
       setMsg("");
     }
     if (images.length > 0) {
       for (let i = 0; i < images.length; i++) {
-        console.log("Image", i+1, ":", images[i]);
+        console.log("Image", i + 1, ":", images[i]);
       }
       setImages([]);
     }
@@ -89,9 +122,9 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
       }
       setMsg(imageNames);
     }
-};
+  };
   const handleFileUploadClick = () => {
-    const imageUpload = document.getElementById('imageUpload');
+    const imageUpload = document.getElementById("imageUpload");
     if (imageUpload) {
       imageUpload.click();
     }
@@ -105,8 +138,13 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
           {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick} />}
         </div>
         <div className="upload-image">
-        <input type="file" id="imageUpload" onChange={handleImageUploadChange} multiple />
-          <FiImage onClick={handleFileUploadClick} />
+          <input
+            type="file"
+            id="imageUpload"
+            onChange={handleImageUploadChange}
+          />
+          {/* <FiImage onClick={handleFileUploadClick} /> */}
+          <UploadImage onChangeImage={onUpdateImage} isIconSelect />
         </div>
       </div>
       <div className="input-container">
@@ -130,11 +168,11 @@ const Container = styled.div`
   display: grid;
   align-items: center;
   grid-template-columns: 10% 90%;
-  background-color: #333; 
-  position: relative; 
-  padding: 0.5rem; 
-  border-radius: 2rem; 
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
+  background-color: #333;
+  position: relative;
+  padding: 0.5rem;
+  border-radius: 2rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   @media screen and (min-width: 720px) and (max-width: 1080px) {
     padding: 0 1rem;
     gap: 1rem;
@@ -148,8 +186,8 @@ const Container = styled.div`
       position: relative;
       svg {
         cursor: pointer;
-        font-size: 2rem; 
-        margin: 0 0.2rem; 
+        font-size: 2rem;
+        margin: 0 0.2rem;
         color: #ffc107;
       }
       .emoji-picker-react {
@@ -176,20 +214,20 @@ const Container = styled.div`
         }
         .emoji-group:before {
           background-color: #080420;
-        }  
+        }
       }
     }
     .upload-image {
       position: relative;
-      
+
       input[type="file"] {
         display: none;
       }
-      
+
       svg {
         cursor: pointer;
-        font-size: 2rem; 
-        margin: 0 0.2rem; 
+        font-size: 2rem;
+        margin: 0 0.2rem;
         color: #fff;
         vertical-align: middle;
       }
@@ -227,7 +265,7 @@ const Container = styled.div`
       }
     }
     button {
-      border-radius: 50px; 
+      border-radius: 50px;
       width: 3rem;
       height: 3rem;
       padding: 0.5rem;
