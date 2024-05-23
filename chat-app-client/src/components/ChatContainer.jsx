@@ -1,20 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import Logout from "./Logout";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import ChatInput from "./ChatInput";
 import { getCurrentUserLocal } from "../utils/LocalStorage";
 import UpdateNameMG from "./UpdateNameMG";
-import UploadImages from "./UploadImages";
-import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
-import { BsClipboardPlusFill } from "react-icons/bs";
-import { Image } from "antd";
+import { Modal } from "antd";
 import { UploadImage } from "./upload/UploadImage";
 import { useUploadGroupImage } from "../hooks/useUploadGroupImage";
 
-
-let currentPage = 1
+let currentPage = 1;
 let reachedEnd = false;
 export default function ChatContainer({
   currentChat,
@@ -26,8 +21,12 @@ export default function ChatContainer({
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
   const [chat, setChat] = useState(currentChat);
-  const { MessageGroupId, Message_group_name, Message_group_image, ReceiverId } =
-    currentChat;
+  const {
+    MessageGroupId,
+    Message_group_name,
+    Message_group_image,
+    ReceiverId,
+  } = currentChat;
   const [isScrolled, setIsScrolled] = useState(false);
   const lastFetchLength = useRef(0);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -37,7 +36,7 @@ export default function ChatContainer({
 
   const fetchMessages = async (page) => {
     try {
-      console.log(currentChat)
+      console.log(currentChat);
       if (MessageGroupId != "") {
         const response = await axios.get(
           `http://localhost:8080/api/v1/messages/${MessageGroupId}?page=${page}`,
@@ -52,10 +51,11 @@ export default function ChatContainer({
           return;
         }
         return response.data;
-      }
-      else if (ReceiverId != "") {
+      } else if (ReceiverId != "") {
         const response = await axios.get(
-          `http://localhost:8080/api/v1/messages/getAmbigoursMessages/${ReceiverId}?page=${page}&userId=${getCurrentUserLocal()['_id']}`,
+          `http://localhost:8080/api/v1/messages/getAmbigoursMessages/${ReceiverId}?page=${page}&userId=${
+            getCurrentUserLocal()["_id"]
+          }`,
           {
             withCredentials: true,
           }
@@ -78,8 +78,6 @@ export default function ChatContainer({
     if (reachedEnd) return;
 
     try {
-
-
       let nextPage = currentPage + 1;
       currentPage = nextPage;
       if (lastFetchLength.current > 0 && lastFetchLength.current < 20) {
@@ -92,7 +90,7 @@ export default function ChatContainer({
         lastFetchLength.current = newMessages.length;
 
         if (newMessages.length < 20) {
-          reachedEnd = true
+          reachedEnd = true;
         }
 
         // if (newMessages.length >= 20) {
@@ -101,10 +99,9 @@ export default function ChatContainer({
         // }
       } else {
         if (lastFetchLength.current < 20) {
-          reachedEnd = true
+          reachedEnd = true;
         }
       }
-
     } catch (error) {
       console.log(`Failed to fetch messages: ${error.message}`);
     }
@@ -132,8 +129,8 @@ export default function ChatContainer({
     setShowImageDialog(false);
   };
   const handeCallMess = () => {
-    showCallModal(ReceiverId, Message_group_image)
-  }
+    showCallModal(ReceiverId, Message_group_image);
+  };
   const onUpdateImage = async (values) => {
     if (values?.url) {
       const res = await uploadGroupImage({
@@ -146,12 +143,12 @@ export default function ChatContainer({
     }
   };
   useEffect(() => {
-    currentPage = 1
+    currentPage = 1;
     reachedEnd = false;
     const handleScroll = (e) => {
       const { scrollTop } = e.currentTarget;
       if (scrollTop === 0 && !isScrolled && !reachedEnd) {
-        fetchMoreMessages()
+        fetchMoreMessages();
       }
       setIsScrolled(scrollTop > 0);
     };
@@ -169,15 +166,13 @@ export default function ChatContainer({
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView();
-  }, [messages])
+  }, [messages]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-
         const initialMessages = await fetchMessages(currentPage);
         setMessages(initialMessages);
-
       } catch (error) {
         console.error("Lỗi khi tải tin nhắn:", error);
       }
@@ -186,147 +181,128 @@ export default function ChatContainer({
   }, [messagePayload, currentChat]);
 
   return (
-    <Container>
-      <div className="chat-header">
-        <div className="user-details">
-          <div className="avatar" onClick={openImageDialog}>
-            {Message_group_image ? (
-              <img
-                src={Message_group_image}
-                alt=""
-              />
-            ) : (
-              <img
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU"
-                alt="Defaut Image"
-              />
-            )}
-          </div>
-          <div className="nameChat">
-            {Message_group_name ? (
-              <h3>{Message_group_name}</h3>
-            ) : (
-              <h3>Không có tên</h3>
-            )}
-          </div>
-          <div className="editName">
-            <button
-              className="editButton"
-              onClick={() => setShowEditDialog(true)}
-            >
-              <p>✎</p>
-            </button>
-            {showEditDialog && (
-              <UpdateNameMG
-                handleClose={handleCloseEditDialog}
-                groupId={MessageGroupId}
-                updateGroupName={updateGroupName} // Truyền hàm callback vào component con
-              />
-            )}
-          </div>
-        </div>
-        <div>
-          {currentChat.Message_group_type !== 'Group' ? (
-            <button className="call-button" onClick={handeCallMess} >
-              <span class="material-symbols-outlined">
-                call
-              </span>
-            </button>
-          ) : (
-            <span></span>
-          )}
-        </div>
-      </div>
-      {showImageDialog && (
-        // <Modal onClick={closeImageDialog}>
-        //   <ModalContent onClick={(e) => e.stopPropagation()}>
-        //     <UploadImages
-        //       closeDialog={closeImageDialog}
-        //       GroupID={MessageGroupId}
-        //       onImageUpload={uploadImg}
-        //     />
-        //     <CloseButton onClick={closeImageDialog}>&times;</CloseButton>
-        //   </ModalContent>
-        // </Modal>
-        <>
-          <Image
-            width={60}
-            height={60}
-            style={{ objectFit: "cover" }}
-            preview={false}
-            //src={currentUser.Image_path}
-            onClick={() => setIsModalOpenGroupImage(true)}
-          />
-          <Modal
-            title="Thay đổi avatar"
-            open={isModalOpenGroupImage}
-            cancelText="Lưu"
-            width="180px"
-            okButtonProps={{ hidden: true }}
-            cancelButtonProps={{ hidden: true }}
-            onCancel={() => setIsModalOpenGroupImage(false)}
-          >
-            <UploadImage onChangeImage={onUpdateImage} />
-          </Modal></>
-      )}
-      <div className="chat-messages" ref={scrollRef}>
-        {messages
-          .slice()
-          .reverse()
-          .map((message, index) => (
-            <MessageBubble
-              ref={index === messages.length - 1 ? scrollRef : null}
-              key={uuidv4()}
-              fromSelf={message.fromSelf}
-            >
-              {message.fromSelf ? null : (
-                <div className="sender-name">
-                  {message.Sender_user.user_name}
-                </div>
+    <>
+      <Container>
+        <div className="chat-header">
+          <div className="user-details">
+            <div className="avatar" onClick={openImageDialog}>
+              {Message_group_image ? (
+                <img src={Message_group_image} alt="" />
+              ) : (
+                <img
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUdO2qhODLgmxWPYWgpV9P4BOqAGx5-LNM0A&usqp=CAU"
+                  alt="Defaut Image"
+                />
               )}
-              <div
-                className={`message ${message.fromSelf ? "sended" : "recieved"
-                  }`}
+            </div>
+            <div className="nameChat">
+              {Message_group_name ? (
+                <h3>{Message_group_name}</h3>
+              ) : (
+                <h3>Không có tên</h3>
+              )}
+            </div>
+            <div className="editName">
+              <button
+                className="editButton"
+                onClick={() => setShowEditDialog(true)}
               >
-                <div className="content">
-                  <p>{message?.Content}</p>
-                  {message.Type === "image" && (
-                    <img src={message.Media_path} alt="Attached" />
-                  )}
-                  {message.Attach_file && (
-                    <div>
-                      <a
-                        href={message.Attach_file.path}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Download File
-                      </a>
-                    </div>
-                  )}
-                </div>
+                <p>✎</p>
+              </button>
+              {showEditDialog && (
+                <UpdateNameMG
+                  handleClose={handleCloseEditDialog}
+                  groupId={MessageGroupId}
+                  updateGroupName={updateGroupName} // Truyền hàm callback vào component con
+                />
+              )}
+            </div>
+          </div>
+          <div>
+            {currentChat.Message_group_type !== "Group" ? (
+              <button className="call-button" onClick={handeCallMess}>
+                <span class="material-symbols-outlined">call</span>
+              </button>
+            ) : (
+              <span></span>
+            )}
+          </div>
+        </div>
 
-                <div className="message-info">
-                  <span>
-                    Sent at {new Date(message.Created_date).toLocaleString()}
-                  </span>
-                  {message.Reply_to_msg && (
-                    <span> | Replying to: {message.Reply_to_msg.content}</span>
-                  )}
-                  <div>Seen by: {message.Seen_by?.join(", ") || "None"}</div>
+        <div className="chat-messages" ref={scrollRef}>
+          {messages
+            .slice()
+            .reverse()
+            .map((message, index) => (
+              <MessageBubble
+                ref={index === messages.length - 1 ? scrollRef : null}
+                key={uuidv4()}
+                fromSelf={message.fromSelf}
+              >
+                {message.fromSelf ? null : (
+                  <div className="sender-name">
+                    {message.Sender_user.user_name}
+                  </div>
+                )}
+                <div
+                  className={`message ${
+                    message.fromSelf ? "sended" : "recieved"
+                  }`}
+                >
+                  <div className="content">
+                    <p>{message?.Content}</p>
+                    {message.Type === "image" && (
+                      <img src={message.Media_path} alt="Attached" />
+                    )}
+                    {message.Attach_file && (
+                      <div>
+                        <a
+                          href={message.Attach_file.path}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Download File
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="message-info">
+                    <span>
+                      Sent at {new Date(message.Created_date).toLocaleString()}
+                    </span>
+                    {message.Reply_to_msg && (
+                      <span>
+                        {" "}
+                        | Replying to: {message.Reply_to_msg.content}
+                      </span>
+                    )}
+                    <div>Seen by: {message.Seen_by?.join(", ") || "None"}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="message-time">
-                {new Date(message.Created_date).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
-            </MessageBubble>
-          ))}
-      </div>
-      <ChatInput stompClient={stompClient} currentChat={currentChat} />
-    </Container>
+                <div className="message-time">
+                  {new Date(message.Created_date).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+              </MessageBubble>
+            ))}
+        </div>
+        <ChatInput stompClient={stompClient} currentChat={currentChat} />
+      </Container>
+      <Modal
+        title="Thay đổi hình nền"
+        open={showImageDialog}
+        cancelText="Lưu"
+        width="180px"
+        okButtonProps={{ hidden: true }}
+        cancelButtonProps={{ hidden: true }}
+        onCancel={() => setShowImageDialog(false)}
+      >
+        <UploadImage onChangeImage={onUpdateImage} />
+      </Modal>
+    </>
   );
 }
 
@@ -387,9 +363,8 @@ const Container = styled.div`
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow-y: auto; 
+    overflow-y: auto;
     max-height: 470px;
-
 
     .message {
       position: relative;
@@ -431,37 +406,6 @@ const Container = styled.div`
       display: block;
     }
   }
-`;
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(15, 12, 41, 0.6); /* Màu nền với độ mờ */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index:999;
-`;
-
-const ModalContent = styled.div`
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #333;
 `;
 
 const MessageBubble = styled.div`

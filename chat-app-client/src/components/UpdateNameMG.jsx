@@ -26,7 +26,10 @@ function UpdateNameMG({ handleClose, groupId, updateGroupName }) {
   return (
     <DialogOverlay>
       <DialogContainer>
-        <DialogTitle>Chỉnh sửa tên nhóm</DialogTitle>
+        <DialogTitle className="flex justify-between">
+          <div>Chỉnh sửa tên nhóm</div>{" "}
+          <div className="cursor-pointer" onClick={() => handleClose()}>x</div>
+        </DialogTitle>
         <DialogContent>
           <InputWrapper>
             <label htmlFor="newGroupName">Tên nhóm mới:</label>
