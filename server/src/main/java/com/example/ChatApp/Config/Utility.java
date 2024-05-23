@@ -8,7 +8,7 @@ public class Utility {
 	}
 	public static class MessageType {
 		public static String Text = "Text";
-		public static String File = "File";
+		public static String File = "image";
 		public static String AttachFile = "AttachFile";
 
 	}

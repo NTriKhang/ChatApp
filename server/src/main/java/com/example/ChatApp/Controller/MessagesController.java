@@ -82,7 +82,12 @@ public class MessagesController {
 					socketService.sendErrorToUser(messageTextIndDto.SenderId);
 					return messageTextIndDto;
 				}
-				messageList = messageService.insertBothMessage(new SenderUser_Msg(messageTextIndDto.SenderId, messageTextIndDto.SenderName) , messageTextIndDto.MsgGroupSenderId, senderGroup.get().MsgConnectedId, messageTextIndDto.Content);
+				if(messageTextIndDto.Type == "Text")
+					messageList = messageService.insertBothMessage(new SenderUser_Msg(messageTextIndDto.SenderId, messageTextIndDto.SenderName),
+						messageTextIndDto.MsgGroupSenderId, senderGroup.get().MsgConnectedId, messageTextIndDto.Content);
+				else
+					messageList = messageService.insertBothMessage(new SenderUser_Msg(messageTextIndDto.SenderId, messageTextIndDto.SenderName),
+							messageTextIndDto.MsgGroupSenderId, senderGroup.get().MsgConnectedId, messageTextIndDto.Media_path, messageTextIndDto.Type);
 			}
 			else {
 				System.err.println("Invalid parameter");

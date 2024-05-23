@@ -6,6 +6,7 @@ import Picker from "emoji-picker-react";
 import { FiImage } from "react-icons/fi";
 import { getCurrentUserLocal } from "../utils/LocalStorage";
 import { useUploadMessageFile } from "../hooks/useUploadMessageFile";
+import { UploadImage } from "./upload/UploadImage";
 
 export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
   const [msg, setMsg] = useState("");
@@ -23,15 +24,41 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
   };
 
   const onUpdateImage = async (values) => {
-    // if (values?.url) {
-    //   const res = await uploadMessageFile({
-    //     id: MessageGroupId,
-    //     url: {
-    //       imageUrl: values?.url,
-    //     },
-    //   });
-    //   if (!res) return;
-    // }
+    if (values?.url) {
+      var currentUser = getCurrentUserLocal();
+
+      if (currentChat.Message_group_type === 'Group') {
+        let messageTextDto = {
+          Content: null,
+          Message_group_id: currentChat.MessageGroupId,
+          Sender_user: {
+            user_id: currentUser._id,
+            user_name: currentUser.Display_name,
+          },
+          Type: 'image',
+          Media_path: values.url
+        };
+        stompClient.send(
+          "/app/sendMessage",
+          {},
+          JSON.stringify(messageTextDto)
+        );
+        //console.log(messageTextDto)
+      }
+      else {
+        let messageTextIndDto = {
+          Content: null,
+          SenderName: currentUser.Display_name,
+          SenderId: currentUser._id,
+          MsgGroupSenderId: currentChat.MessageGroupId,
+          ReceiverId: currentChat.ReceiverId,
+          Type: 'image',
+          Media_path: values.url
+        }
+        //console.log(messageTextIndDto)
+        stompClient.send("/app/sendIndMessage", {}, JSON.stringify(messageTextIndDto))
+      }
+    }
   };
 
   const sendChat = (event) => {
@@ -64,7 +91,7 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
           SenderName: currentUser.Display_name,
           SenderId: currentUser._id,
           MsgGroupSenderId: currentChat.MessageGroupId,
-          ReceiverId: currentChat.ReceiverId
+          ReceiverId: currentChat.ReceiverId,
         }
         //console.log(messageTextIndDto)
         stompClient.send("/app/sendIndMessage", {}, JSON.stringify(messageTextIndDto))
@@ -96,7 +123,7 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
       imageUpload.click();
     }
   };
-
+  
   return (
     <Container>
       <div className="button-container">
@@ -105,8 +132,9 @@ export default function ChatInput({ handleSendMsg, stompClient, currentChat }) {
           {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick} />}
         </div>
         <div className="upload-image">
-        <input type="file" id="imageUpload" onChange={handleImageUploadChange} multiple />
-          <FiImage onClick={handleFileUploadClick} />
+        <input type="file" id="imageUpload" onChange={handleImageUploadChange} />
+          {/* <FiImage onClick={handleFileUploadClick} /> */}
+          <UploadImage onChangeImage={onUpdateImage} />
         </div>
       </div>
       <div className="input-container">

@@ -289,7 +289,7 @@ export default function ChatContainer({
                   }`}
               >
                 <div className="content">
-                  <p>{message.Content}</p>
+                  <p>{message?.Content}</p>
                   {message.Type === "image" && (
                     <img src={message.Media_path} alt="Attached" />
                   )}
