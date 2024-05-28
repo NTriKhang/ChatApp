@@ -49,7 +49,7 @@ export default function ChatContainer({
         }
         if (response.data == null) {
           return;
-        }
+        }   
         return response.data;
       } else if (ReceiverId != "") {
         const response = await axios.get(
@@ -364,7 +364,7 @@ const Container = styled.div`
     flex-direction: column;
     gap: 10px;
     overflow-y: auto;
-    max-height: 470px;
+    max-height: 550px;
 
     .message {
       position: relative;

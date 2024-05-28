@@ -73,8 +73,9 @@ export default function Login() {
       }, {
         withCredentials: true
       });
-      if (data.status === 500) {
-        toast.error(data.error, toastOptions);
+      console.log(data === '')
+      if (data === '') {
+        alert("Wrong information");
       }
       if (data?.Display_name) {
         setCurrentUserLocal(data)

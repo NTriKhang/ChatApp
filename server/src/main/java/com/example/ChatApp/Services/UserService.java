@@ -74,22 +74,29 @@ public class UserService {
 	}
 
 	public Optional<Users> signin(SignInDto signInDto) {
-		System.out.println(signInDto.Account_name);
-		Optional<Users> user = usersRepository.authLogin(signInDto.Account_name, signInDto.Password);
-		return user;
+		try {
+			System.out.println(signInDto.Account_name);
+			Optional<Users> user = usersRepository.authLogin(signInDto.Account_name, signInDto.Password);
+			return user;
+		} catch (Exception e) {
+			// TODO: handle exception
+			return null;
+		}
 	}
 	public UpdateResult updateUser(UserUpdateDto userUpdateRequest) {
 		ObjectId id = new ObjectId(userUpdateRequest.Id);
 		Query query = new Query(Criteria.where("_id").is(id));
 
-		Date editedDay = mongoTemplate.findOne(query, Users.class).Edited_day;
-		Date createDay = mongoTemplate.findOne(query, Users.class).Created_day;
-		long millisBetween = new Date().getTime() - editedDay.getTime();
-		long daysBetween = millisBetween / (24 * 60 * 60 * 1000);
-		long millisBetween1 = new Date().getTime() - createDay.getTime();
-		long daysBetween1 = millisBetween1 / (24 * 60 * 60 * 1000);
-		
-		System.out.println(millisBetween + " " + daysBetween);
+		/*
+		 * Date editedDay = mongoTemplate.findOne(query, Users.class).Edited_day; Date
+		 * createDay = mongoTemplate.findOne(query, Users.class).Created_day; long
+		 * millisBetween = new Date().getTime() - editedDay.getTime(); long daysBetween
+		 * = millisBetween / (24 * 60 * 60 * 1000); long millisBetween1 = new
+		 * Date().getTime() - createDay.getTime(); long daysBetween1 = millisBetween1 /
+		 * (24 * 60 * 60 * 1000);
+		 * 
+		 * System.out.println(millisBetween + " " + daysBetween);
+		 */
 
 		/*
 		 * if (editedDay==null&&daysBetween<=60) { return null; } if (daysBetween1<=60)
@@ -104,8 +111,7 @@ public class UserService {
 				.set("Display_name", userUpdateRequest.getDisplayName())
 				.set("Email", userUpdateRequest.getEmail())
 				.set("Tag", userUpdateRequest.getTag())
-				.set("Birth", userUpdateRequest.getBirth())
-				.set("Edited_day", new Date());
+				.set("Birth", userUpdateRequest.getBirth());
 
 		return mongoTemplate.updateFirst(query, update, Users.class);
 	}
