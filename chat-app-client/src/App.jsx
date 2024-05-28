@@ -4,6 +4,7 @@ import SetAvatar from "./components/SetAvatar";
 import ChatPage from "./pages/ChatPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ProtectedRoute from "./utils/ProtectedRoute";
 export default function App() {
   return (
     <BrowserRouter>
