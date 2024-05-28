@@ -248,10 +248,10 @@ export default function Contacts({
           <div className="flex justify-between w-full">
             <div className="flex flex-column items-center">
               <div className="avatar">
-                {currentUserImage ? (
+                {currentUser.Image_path ? (
                   <img src={currentUser?.Image_path} alt="avatar" />
                 ) : (
-                  <img src={currentUser?.Image_path} alt="avatar" />
+                  <img src={'https://as1.ftcdn.net/v2/jpg/03/46/83/96/1000_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg'} alt="avatar" />
                 )}
               </div>
               <div className="username">
@@ -289,17 +289,27 @@ export default function Contacts({
                   <div
                     className="px-4 py-5 sm:px-6"
                     style={{
-                      backgroundImage: `url(${currentUser?.Background_image_path})`,
+                      backgroundImage: `url(${currentUser?.Background_image_path !== null ? currentUser.Background_image_path : "https://img.freepik.com/premium-vector/user-icon-vector-with-blue-background-suitable-web-design-etc_266866-110.jpg"})`,
                       backgroundRepeat: "no-repeat",
                       backgroundSize: "cover",
                     }}
                   >
-                    <Image
-                      width={60}
-                      height={60}
-                      style={{ objectFit: "cover" }}
-                      src={currentUser.Image_path}
-                    />
+                     {currentUser.Image_path ? (
+                        <Image
+                        width={60}
+                        height={60}
+                        style={{ objectFit: "cover" }}
+                        src={currentUser.Image_path}
+                      />
+                      ) : (
+                        <Image 
+                        width={60}
+                        height={60}
+                        style={{ objectFit: "cover" }}
+                        src={'https://as1.ftcdn.net/v2/jpg/03/46/83/96/1000_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg'}
+                        />
+                      )}
+                    
                     <span
                       class="material-symbols-outlined cursor-pointer "
                       onClick={() => setIsModalOpenAvatar(true)}

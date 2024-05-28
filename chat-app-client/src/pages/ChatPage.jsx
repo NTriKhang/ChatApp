@@ -11,14 +11,12 @@ import { getCurrentUserLocal } from "../utils/LocalStorage";
 import { useGetMessageGroup } from "../hooks/useGetMessageGroup";
 import { CallModal } from "../components/modal/CallModal";
 import { conforms, every, set } from "lodash";
+import { useNavigate } from "react-router-dom";
 
 var stompClient = null;
-var localStream = null;
-var peerConnection = null;
-let remoteStream = null;
-let isTrack = false;
-var userId = (getCurrentUserLocal() === null) ? null : getCurrentUserLocal["_id"];
 const ChatPage = () => {
+  const navigate = useNavigate();
+
   const [currentChat, setCurrentChat] = useState(null);
   const [currentCall, setCurrentCall] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -44,7 +42,8 @@ const ChatPage = () => {
   };
 
   const onConnected = () => {
-    let userId2 = getCurrentUserLocal()['_id']
+
+    let userId2 = currentUser['_id']
     stompClient.subscribe('/user/' + userId2 + '/message_group', onGroupMessage);
     stompClient.subscribe('/user/' + userId2 + '/message', onMessage);
     stompClient.subscribe('/user/' + userId2 + '/notify', onNotify)
@@ -53,6 +52,8 @@ const ChatPage = () => {
     stompClient.subscribe('/user/' + userId2 + '/offer_private_call', onOfferPrivateCall);
     stompClient.subscribe('/user/' + userId2 + '/answer_private_call', onAnswerPrivateCall);
     stompClient.subscribe('/user/' + userId2 + '/shutdown_call', onShutdownCall);
+
+
   }
 
   const onNotify = (payload) => {
@@ -121,13 +122,14 @@ const ChatPage = () => {
     setCurrentChat(contact);
     setShowWelcome(false);
   };
-  
+
   const showCallModal = (receiverId, Message_group_image) => {
-    setCurrentCall({receiverId, Message_group_image})
+    setCurrentCall({ receiverId, Message_group_image })
     //console.log(Message_group_image)
     setOpen(true);
   };
   useEffect(() => {
+    console.log(currentUser)
     if (isConnect === false) {
       connect();
     }
@@ -135,13 +137,13 @@ const ChatPage = () => {
   return (
     <PageContainer>
       <div className="container">
-        <Contacts messageGroup={messageGroup} 
-                  changeChat={changeCurrentChat} 
-                  currentChat={currentChat} 
-                  stompClient={stompClient}
-                  changeSelectedSearch={changeSelectedSearch}
-                  refetch={refetch}
-                  />
+        <Contacts messageGroup={messageGroup}
+          changeChat={changeCurrentChat}
+          currentChat={currentChat}
+          stompClient={stompClient}
+          changeSelectedSearch={changeSelectedSearch}
+          refetch={refetch}
+        />
 
         {currentChat ? (
           <ChatContainer

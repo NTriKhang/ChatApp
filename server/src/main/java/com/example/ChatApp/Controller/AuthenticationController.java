@@ -43,9 +43,9 @@ public class AuthenticationController {
 		Users users = userService.signup(sigUpRequest);
 
 		if (users.Tag == "not unique") {
-			return new ResponseEntity<Users>(users, HttpStatus.CONFLICT);
+			return new ResponseEntity<Users>(users, HttpStatus.NO_CONTENT);
 		} else if (users.Email == "not unique") {
-			return new ResponseEntity<Users>(users, HttpStatus.CONFLICT);
+			return new ResponseEntity<Users>(users, HttpStatus.NO_CONTENT);
 		}
 		return new ResponseEntity<Users>(users, HttpStatus.OK);
 
@@ -58,7 +58,7 @@ public class AuthenticationController {
 		System.out.println(signInDto.Account_name + ' ' + signInDto.Password);
 		Optional<Users> user = userService.signin(signInDto);
 		if (user.isEmpty())
-			return new ResponseEntity<>(user.get(), HttpStatus.CONFLICT);
+			return new ResponseEntity<>(null,HttpStatus.NO_CONTENT);
 		HttpHeaders headers = new HttpHeaders();
 		
 		Users resUser = user.get();

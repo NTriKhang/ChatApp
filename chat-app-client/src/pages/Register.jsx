@@ -81,7 +81,7 @@ export default function Register() {
         navigate("/");
        
       } else {
-        toast.error(statusText, toastOptions);
+        alert('Email or tag is conflict')
       }
     }
   };
